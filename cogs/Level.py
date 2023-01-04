@@ -53,6 +53,35 @@ class Level(commands.Cog):
                 if founda_alumni not in member.roles:
                     await member.add_roles(founda_alumni,diploma)
 
+#extra
+            elif payload.emoji.id=='🇧':
+                guild=self.client.guilds[0]
+                member = guild.get_member(payload.user_id)
+                bsc=discord.utils.get(guild.roles,name='BSc')
+                if bsc in member.roles:
+                    return
+                for subject_role in subject_roles:
+                    role = discord.utils.get(guild.roles, name=subject_role)
+                    if role in member.roles:
+                        await member.remove_roles(role, reason="level change")
+                
+                foundational=discord.utils.get(guild.roles,name='Foundational')
+                founda_alumni=discord.utils.get(guild.roles,name='Foundational Alumni')
+                diploma=discord.utils.get(guild.roles,name='Diploma')
+                diploma_alumni=discord.utils.get(guild.roles,name='Diploma Alumni')
+                if founda_alumni not in member.roles:
+                    await member.add_roles(founda_alumni)
+                if diploma_alumni not in member.roles:
+                    await member.add_roles(diploma_alumni)
+                if bsc not in member.roles:
+                    await member.add_roles(bsc)
+                if foundational in member.roles:
+                    await member.remove_roles(foundational)
+                if diploma in member.roles:
+                    await member.remove_roles(diploma)
+
+
+
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
         if payload.guild_id is None:
@@ -99,6 +128,32 @@ class Level(commands.Cog):
                     await member.remove_roles(founda_alumni)
                 if diploma in member.roles:
                     await member.remove_roles(diploma)
+                if foundational not in member.roles:
+                    await member.add_roles(foundational)
+
+            elif payload.emoji.name=='🇧':
+                guild=self.client.guilds[0]
+                member = guild.get_member(payload.user_id)
+                bsc=discord.utils.get(guild.roles,name='BSc')
+                diploma=discord.utils.get(guild.roles,name='Diploma')
+                if bsc not in member.roles:
+                    return
+                for subject_role in subject_roles:
+                    role = discord.utils.get(guild.roles, name=subject_role)
+                    if role in member.roles:
+                        await member.remove_roles(role, reason="level change")
+                
+                foundational=discord.utils.get(guild.roles,name='Foundational')
+                founda_alumni=discord.utils.get(guild.roles,name='Foundational Alumni')
+                diploma_alumni=discord.utils.get(guild.roles,name='Diploma Alumni')
+                if founda_alumni in member.roles:
+                    await member.remove_roles(founda_alumni)
+                if diploma in member.roles:
+                    await member.remove_roles(diploma)
+                if diploma_alumni in member.roles:
+                    await member.remove_roles(diploma_alumni)
+                if bsc in member.roles:
+                    await member.remove_roles(bsc)
                 if foundational not in member.roles:
                     await member.add_roles(foundational)
 
