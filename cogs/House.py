@@ -7,14 +7,15 @@ class House(commands.Cog):
 
     def  __init__(self,client):
         self.client=client
+#        print(len(client.guilds))
+#        self.houserole=get(client.guilds[0].roles, id=835238631848804353)
         
     @commands.command()
     async def house(self, ctx, *,url):
         if ctx.channel.id==766072627311673377:
-            self.houserole=get(self.client.guilds[0].roles, id=835238631848804353)
-            
             print(url)
             data=tools.house_dict(url)
+            print(data)
             if data:
                 if data[0]=='A':
                     try:
@@ -28,11 +29,14 @@ class House(commands.Cog):
                         for email in info:
                             if email in discord_users:
                                 try:
-                                    member= await self.client.guilds[0].fetch_member(discord_users[email])
+                                    member= await self.client.guilds[0].fetch_member(int(discord_users[email]))
+                                    self.houserole=get(ctx.guild.roles, id=835238631848804353)
                                     if self.houserole not in member.roles:
                                         await member.add_roles(get(self.client.guilds[0].roles, name=info[email]))
                                         await member.add_roles(self.houserole)
                                         print(email,member.name,'given role',info[email])
+                                    else:
+                                        print('else')
                                 except:
                                     print(email, 'error',member.name)
                     except:

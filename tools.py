@@ -181,7 +181,7 @@ def scrape_house_info(soup):
         #Type A
         style='A'
         output={}
-        for row in data[2:-2]:
+        for row in data[4:-2]:
             try:
                 info=row.find_all('td')
                 output[info[0].text.lower()]=info[2].text.title()
