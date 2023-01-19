@@ -33,9 +33,9 @@ def send_email(name,otp,email_id):
 Please enter the code {otp} on the email verification channel to access the Foundational role.
 If you didn't request this code, you can safely ignore this email. Someone else might have typed your email address by mistake.
 Don't reply to this mail id if you have any problem,
-mail:  mohit.sinsniwal.dev@gmail.com
+GitHub: https://github.com/mohit-sinsniwal/iitm-server-bot
 Thanks! 
-IITM B.Sc Students Discord Team"""
+IITM BS Students Discord Team"""
     subject="Verification Code for Discord Server"
     sendTo = sib_api_v3_sdk.SendSmtpEmailTo(email=email_id,name=name)
     arrTo = [sendTo] #Adding `to` in a list
@@ -51,7 +51,7 @@ def create_embed():
     embed = discord.Embed(
                 title='To Proceed further with the verification process, enter your IIT Madras student EmailId [@ds.study.iitm.ac.in]',
                 colour=discord.Colour(1038847), 
-                description='''We're storing the e-mails in a database to make sure not more than one account verifies by the same  EmailId'''
+                description='''We're storing the e-mails in a database to make sure not more than one account verifies by the same EmailId https://github.com/mohit-sinsniwal/iitm-server-bot'''
             )
     embed.set_image(url="https://cdn.discordapp.com/attachments/560753089179680768/594957849797460177/Epic_gif-1.gif") # gif bar
     embed.set_thumbnail(

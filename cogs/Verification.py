@@ -107,8 +107,8 @@ class Verification(commands.Cog):
                                 pass
                             await msg.author.send(f"""**Success!**
     You are now a Verified member of this server.{add_on}
-    **If you like this server, do share our invite link with those who are interested in this degree**
-    https://discord.gg/np7EKPcAY3""")
+    **Server Link** https://discord.gg/np7EKPcAY3
+    **GitHub Link** https://github.com/mohit-sinsniwal/iitm-server-bot""")
                             otp_info.pop(msg.channel.id)
                             try:
                                 await msg.channel.delete()
