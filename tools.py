@@ -67,7 +67,7 @@ def create_embed():
 def find_duplicate(email):
     global AUTH_TOKEN
     conn = http.client.HTTPSConnection(f"{REST_API_HOSTNAME}")
-    payload = "{\"commands\":\"SELECT * FROM VERIFIED where email='"+f"{email[0:-32]}"+"';\",\"limit\":20000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
+    payload = "{\"commands\":\"SELECT * FROM VERIFIED where email='"+f"{email[0:-20]}"+"';\",\"limit\":20000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
     headers = {
         'content-type': "application/json",
         'authorization': f"Bearer {AUTH_TOKEN}",
@@ -85,7 +85,7 @@ def find_duplicate(email):
 def insert_row(user_id,email):
     global AUTH_TOKEN
     conn = http.client.HTTPSConnection(f"{REST_API_HOSTNAME}")
-    payload = "{\"commands\":\"INSERT INTO VERIFIED (DISCORD, EMAIL) VALUES ("+f"{int(user_id)}, '{email[0:-32]}'"+");\",\"limit\":20000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
+    payload = "{\"commands\":\"INSERT INTO VERIFIED (DISCORD, EMAIL) VALUES ("+f"{int(user_id)}, '{email[0:-20]}'"+");\",\"limit\":20000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
 
     headers = {
         'content-type': "application/json",
@@ -106,7 +106,7 @@ def change_user_id(user_id,email):
     # AUTH_TOKEN=auth_token_maker()
     global AUTH_TOKEN
     conn = http.client.HTTPSConnection(f"{REST_API_HOSTNAME}")
-    payload = "{\"commands\":\"UPDATE VERIFIED set discord = "+f"{int(user_id)}"+" where email='"+f"{email[0:-32]}"+"';\",\"limit\":20000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
+    payload = "{\"commands\":\"UPDATE VERIFIED set discord = "+f"{int(user_id)}"+" where email='"+f"{email[0:-20]}"+"';\",\"limit\":20000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
 
     headers = {
         'content-type': "application/json",
@@ -262,7 +262,7 @@ def insert_rows(rows):
     output=""
     for row in rows:
         output+="('"
-        output+=row[:-32]
+        output+=row[:-20]
         output+="',  '"
         output+=rows[row]
         output+="'),"
@@ -285,7 +285,7 @@ def update_rows(rows):
     conn = http.client.HTTPSConnection(f"{REST_API_HOSTNAME}")
     output=""
     for email,value in rows:
-        output+="UPDATE VERIFIED set house = "+f"{value[0]}"+" where email='"+f"{email[0:-32]}"+"';"
+        output+="UPDATE VERIFIED set house = "+f"{value[0]}"+" where email='"+f"{email[0:-20]}"+"';"
     payload = "{\"commands\":\""+output+"\",\"limit\":3000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
 
     headers = {
@@ -304,7 +304,7 @@ def get_house(email):
     # AUTH_TOKEN=auth_token_maker()
     global AUTH_TOKEN
     conn = http.client.HTTPSConnection(f"{REST_API_HOSTNAME}")
-    payload = "{\"commands\":\"SELECT * FROM HOUSE where email='"+f"{email[0:-32]}"+"';\",\"limit\":20000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
+    payload = "{\"commands\":\"SELECT * FROM HOUSE where email='"+f"{email[0:-20]}"+"';\",\"limit\":20000,\"separator\":\";\",\"stop_on_error\":\"yes\"}"
     headers = {
         'content-type': "application/json",
         'authorization': f"Bearer {AUTH_TOKEN}",
