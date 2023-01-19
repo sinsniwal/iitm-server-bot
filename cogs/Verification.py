@@ -25,7 +25,7 @@ class Verification(commands.Cog):
                         return
                         
                     elif msg.channel.id not in otp_info:
-                        if re.fullmatch('[0-9][0-9][a-z]*[0-9]*@student.onlinedegree.iitm.ac.in',msg.content):
+                        if re.fullmatch('[0-9][0-9][a-z]*[0-9]*@ds.study.iitm.ac.in',msg.content):
                             await tools.edit_first_message(msg,['emailr'])
                             otp_info[msg.channel.id] = [-100,"0",0,'',0]   
                             counter = 0

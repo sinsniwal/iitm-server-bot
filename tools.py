@@ -49,7 +49,7 @@ IITM B.Sc Students Discord Team"""
 
 def create_embed():
     embed = discord.Embed(
-                title='To Proceed further with the verification process, enter your IIT Madras student EmailId [@student.onlinedegree.iitm.ac.in]',
+                title='To Proceed further with the verification process, enter your IIT Madras student EmailId [@ds.study.iitm.ac.in]',
                 colour=discord.Colour(1038847), 
                 description='''We're storing the e-mails in a database to make sure not more than one account verifies by the same  EmailId'''
             )
@@ -200,7 +200,7 @@ def house_dict(url):
 import re
 def email_test(data_dict):
     for email in data_dict:
-        if not re.fullmatch('[0-9][0-9][a-z]*[0-9]*@student.onlinedegree.iitm.ac.in',email):
+        if not re.fullmatch('[0-9][0-9][a-z]*[0-9]*@ds.study.iitm.ac.in',email):
             return False
     return True
 
@@ -251,7 +251,7 @@ def fetch_all():
     conn.request("GET", f"/dbapi/v4/sql_jobs/{id}", headers=headers)
     result=ast.literal_eval(conn.getresponse().read().decode("utf-8"))['results'][0]
     
-    return {email.lower()+"@student.onlinedegree.iitm.ac.in":discord_id for discord_id,email in result['rows']}
+    return {email.lower()+"@ds.study.iitm.ac.in":discord_id for discord_id,email in result['rows']}
 
 
 
@@ -351,7 +351,7 @@ def create_embed_mode(mode):
         endnote='OTP sent, so check spam and promotions. Please send that OTP here, and you got three attempts.'
     elif  mode[0]=='emailw':
         email='Email\t:red_circle:'
-        endnote='Please write your IITM official student Email ID! with @student.onlinedegree.iitm.ac.in'
+        endnote='Please write your IITM official student Email ID! with @ds.study.iitm.ac.in'
     elif mode[0]=='otpr':
         email='Email\t:green_circle:'
         otp_='OTP\t:green_circle:'

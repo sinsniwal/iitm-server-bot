@@ -131,7 +131,7 @@ class Level(commands.Cog):
                 if foundational not in member.roles:
                     await member.add_roles(foundational)
 
-            elif payload.emoji.name=='🇧':
+            elif payload.emoji.id=='🇧':
                 guild=self.client.guilds[0]
                 member = guild.get_member(payload.user_id)
                 bsc=discord.utils.get(guild.roles,name='BSc')
