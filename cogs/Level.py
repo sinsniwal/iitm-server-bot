@@ -54,7 +54,7 @@ class Level(commands.Cog):
                     await member.add_roles(founda_alumni,diploma)
 
 #extra
-            elif payload.emoji.id=='🇧':
+            elif payload.emoji.name=='🇧':
                 guild=self.client.guilds[0]
                 member = guild.get_member(payload.user_id)
                 bsc=discord.utils.get(guild.roles,name='BSc')
