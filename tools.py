@@ -139,7 +139,7 @@ def auth_token_maker():
     data = res.read()
     return ast.literal_eval(data.decode("utf-8"))['token']
 
-@tasks.loop(seconds=1800)
+@tasks.loop(seconds=180)
 async def change_auth_token():
     global AUTH_TOKEN
     AUTH_TOKEN=auth_token_maker()
@@ -153,12 +153,14 @@ async def ticketclose(client):
     #780980984606621696
     open_category=[ele for ele in client.guilds[0].categories if ele.id== 780980984606621696][0]
     for channel in open_category.channels:
-        messages = await channel.history(limit=1).flatten()
-        if not messages[0].content=="""Error from our side""":
-            min30=datetime.datetime(year=2022,month=3,day=4,hour=10,minute=0)-datetime.datetime(year=2022,month=3,day=4,hour=4,minute=0)
-            if datetime.datetime.now()-messages[0].created_at>min30: #6hr - 5hr 30 min(indian  timezone)= 30 min
-                await messages[0].channel.delete()
-
+        try:
+            messages = await channel.history(limit=1).flatten()
+            if not messages[0].content=="""Error from our side""":
+                min30=datetime.datetime(year=2022,month=3,day=4,hour=10,minute=0)-datetime.datetime(year=2022,month=3,day=4,hour=4,minute=0)
+                if datetime.datetime.now()-messages[0].created_at>min30: #6hr - 5hr 30 min(indian  timezone)= 30 min
+                    await messages[0].channel.delete()
+        except:
+            pass
 # !pip install bs4
 def scrape_house_info(soup):
     data=soup.find_all('tr')
