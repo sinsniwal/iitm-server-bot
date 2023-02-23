@@ -78,7 +78,7 @@ async def on_message(message : discord.Message):
         user_id=int(user_id)
         guild = bot.get_guild(762774569827565569)
         user = guild.get_member(user_id)
-        for role in user.roles:
+        for role in user.roles[1:]:
             await user.remove_roles(role)
         if roll[2]=='f':
             Foundational=780875583214321684
@@ -93,22 +93,27 @@ async def on_message(message : discord.Message):
             role=discord.utils.get(guild.roles, id=Science)
             await user.add_roles(role)# Diploma Science
         if old_user!='None':
-            old_user=int(old_user)
-            Qualifier=780935056540827729
-            Qualifier=discord.utils.get(guild.roles, id=Qualifier)
-            mem=guild.get_member(old_user)
-            if mem:
-                for role in mem.roles:
-                    await mem.remove_roles(role)
-                await mem.add_roles(Qualifier) #Qualifier
+            if old_user!=str(user_id):
+                old_user=int(old_user)
+                Qualifier=780935056540827729
+                Qualifier=discord.utils.get(guild.roles, id=Qualifier)
+                mem=guild.get_member(old_user)
+                if mem:
+                    for role in mem.roles[1:]:
+                        await mem.remove_roles(role)
+                    await mem.add_roles(Qualifier) #Qualifier
 @bot.event
 async def on_interaction(interaction:discord.Interaction):
     if interaction.type == discord.InteractionType.component:
         if interaction.data["custom_id"] == "verify_email":
             Qualifier=discord.utils.get(interaction.guild.roles, id=780935056540827729)
             spam=discord.utils.get(interaction.guild.roles, id=1078208518793994240)
-            if Qualifier in interaction.user.roles and spam not in interaction.user.roles:
-                await interaction.response.send_modal(Verification())
-    
+            if Qualifier in interaction.user.roles:
+                if spam not in interaction.user.roles:
+                    await interaction.response.send_modal(Verification())
+                else:
+                    await interaction.response.send_message("Please check your email for a verification link that was previously sent to you. Click on this link to complete the verification process for your account.",ephemeral=True)
+            else:
+                await interaction.response.send_message("You are already verified on this server.Please contact the server staff if you have any questions or concerns.",ephemeral=True)
 
 bot.run(TOKEN)
