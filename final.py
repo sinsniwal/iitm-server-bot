@@ -22,6 +22,21 @@ class Verification(ui.Modal, title='Verfication Link'):
 
 
         if re.fullmatch('[0-9][0-9][a-z]*[0-9]*',userRoll) and len(userRoll) in [10,11]:
+
+            dotOne=discord.utils.get(interaction.guild.roles, id=1078208692853420073)
+            if dotOne in interaction.user.roles:
+                dotTwo=discord.utils.get(interaction.guild.roles, id=1078208892296761404)
+                if dotTwo in interaction.user.roles:
+                    dotThree=discord.utils.get(interaction.guild.roles, id=1078208973326536724)
+                    if dotThree in interaction.user.roles:
+                        spam=discord.utils.get(interaction.guild.roles, id=1078208518793994240)
+                        interaction.user.add_roles(spam)
+                    else:
+                        await interaction.user.add_roles(dotThree)
+                else:
+                    await interaction.user.add_roles(dotTwo)
+            else:
+                await interaction.user.add_roles(dotOne)
             send_email(interaction.user.name,userRoll,enc)
             await interaction.response.send_message(f"Please check your email inbox for a link that has been sent to your email address, {userRoll}@ds.study.iitm.ac.in.",ephemeral=True)
         else:
@@ -80,6 +95,7 @@ async def on_message(message : discord.Message):
         if old_user!='None':
             old_user=int(old_user)
             Qualifier=780935056540827729
+            Qualifier=discord.utils.get(guild.roles, id=Qualifier)
             mem=guild.get_member(old_user)
             if mem:
                 for role in mem.roles:
@@ -89,7 +105,10 @@ async def on_message(message : discord.Message):
 async def on_interaction(interaction:discord.Interaction):
     if interaction.type == discord.InteractionType.component:
         if interaction.data["custom_id"] == "verify_email":
-            await interaction.response.send_modal(Verification())
-
+            Qualifier=discord.utils.get(interaction.guild.roles, id=780935056540827729)
+            spam=discord.utils.get(interaction.guild.roles, id=1078208518793994240)
+            if Qualifier in interaction.user.roles and spam not in interaction.user.roles:
+                await interaction.response.send_modal(Verification())
+    
 
 bot.run(TOKEN)
