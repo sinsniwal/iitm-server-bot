@@ -94,13 +94,16 @@ class TrainModal(ui.Modal, title='Station Locator'):
             global trains,trainIDs
             userTrains=[]
             for train in trains:
-                for station in trains['geometry']['coordinates']:
-                    if calculate_distance(station,[lat,long])<20:
-                        userTrains.append(trainIDs[trains['properties']['number']])
+                for station in train['geometry']['coordinates']:
+                    if calculate_distance(station,[long,lat])<20:
+                        try:
+                            userTrains.append(trainIDs[train['properties']['number']])
+                        except:
+                            pass
             if userTrains:
                 pass
                 #give them roles
-                await interaction.response.send_message(f"You have been successfully assigned {' ,'.join([a[1] for a in userTrains])}",ephemeral=True)
+                await interaction.response.send_message(f"You have been successfully assigned {' ,'.join(set([a[1] for a in userTrains]))}",ephemeral=True)
 
             else:
                 await interaction.response.send_message(f"Sorry, we havent covered your area this time, since this is our first try",ephemeral=True)
