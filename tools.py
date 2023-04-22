@@ -16,6 +16,7 @@ SIB_API_KEY=config['send_in_blue']['sib_api_key']
 
 # Attempt to read the configuration file and retrieve the Discord bot token.
 TOKEN=config['BOT']['token']
+FERNETKEY = config['Key']['fernet'].encode()
 
 # Set the activity status for the Discord bot.
 activity= cycle([discord.Activity(type=discord.ActivityType.watching,name='Donnie Darko'),discord.Activity(type=discord.ActivityType.listening,name='Traffic')])
@@ -39,7 +40,7 @@ def send_email(name:str,roll_no:str,link:bytes):
     link=link.decode()
     with open('email_template.txt','r') as f:
         htmlcontent=f.read()
-    htmlcontent=htmlcontent.replace('{name}',name)
+    htmlcontent=htmlcontent.replace('{name}',name).replace('{link}',link)
     subject="Verify Your IITM Discord Account Now"
     sendTo = sib_api_v3_sdk.SendSmtpEmailTo(email=roll_no+'@ds.study.iitm.ac.in',name=name)
     arrTo = [sendTo] #Adding `to` in a list
