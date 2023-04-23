@@ -1,6 +1,6 @@
 # iitm-server-bot
 
-This project is a Server Discord bot that handles interactions, messages, reactions, and email sending. It is built using Python and the Discord.py library.
+This project is a Server Discord bot that handles interactions, messages, reactions and Slash commands. It is built using Python and the Discord.py library.
 
 ## Getting Started
 
@@ -20,7 +20,8 @@ The project is structured as follows:
 ├── cogs
 │   ├── Interaction.py
 │   ├── Message.py
-│   └── Reaction.py
+│   ├── Reaction.py
+|   └── Slash.py
 ├── config.ini
 ├── email_template.txt
 ├── main.py

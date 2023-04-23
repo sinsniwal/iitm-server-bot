@@ -15,6 +15,9 @@ class Slash(commands.Cog):
     @app_commands.command(name='help', description='Displays list of commands and their usage')
     @app_commands.describe(command="Input Command Name")
     async def help(self, interaction: discord.Interaction, command: str=None):
+        """
+        Displays list of commands and their usage
+        """
         if command=='help':
             output=discord.Embed(title="Help",description="Displays list of commands and their usage",color=0x00ff00)
         elif not command:
