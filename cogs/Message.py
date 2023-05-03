@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-
+from datetime import datetime
+from embeds import verification_embed_dm
 class Menu(discord.ui.View):
     """
     A Discord UI view that displays a menu for EMAIL VERIFICATION.
@@ -18,6 +19,8 @@ class Message(commands.Cog):
     def __init__(self,client):
         self.client=client
 
+
+
     @commands.Cog.listener()
     async def on_message(self,message: discord.Message):
         """
@@ -29,8 +32,9 @@ class Message(commands.Cog):
             if message.content[0:7] == '^create':
                 await message.channel.send("Join our exclusive community and gain access to private channels and premium content by verifying your email address. Click the button below to complete the process and unlock all the benefits of being a part of our server.", view=Menu())
         
-
-
+            elif message.content[0:5] =="^send":
+                embed=verification_embed_dm()
+                await message.author.send(embed=embed)
         # When somes verfies there email address by clicking the verification link, the email
         # verification script sends a message to the server in the format: user_id|roll|old_user
         elif message.author.id == 1078142811725123594: # ID of ServerBot
@@ -72,6 +76,9 @@ class Message(commands.Cog):
                             await mem.remove_roles(role)
                         await mem.add_roles(Qualifier)  # Qualifier
 
+            # Send DM to the user
+            embed = verification_embed_dm()
+            await user.send(embed=embed)
 
 async def setup(client):
     await client.add_cog(Message(client))

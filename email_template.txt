@@ -4,70 +4,493 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Discord Verification</title>
-	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-	<style type="text/css">
-		body {
-			font-family: 'Arial', sans-serif;
-			font-size: 14px;
-			line-height: 1.6;
-			margin: 0;
-			padding: 0;
-		}
-		.container {
-			max-width: 600px;
-			margin: 0 auto;
-			padding: 20px;
-			background-color: rgba(255, 255, 255, 0.9);
-			border-radius: 5px;
-			box-shadow: 0px 0px 10px #d9d9d9;
-		}
-		h1 {
-			font-size: 36px;
-			font-weight: bold;
-			margin-bottom: 30px;
-			text-align: center;
-			color: #424242;
-			text-shadow: 2px 2px 3px rgba(0,0,0,0.3);
-		}
-		p {
-			margin-bottom: 20px;
-			text-align: justify;
-			color: #424242;
-			text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-		}
-		a {
-			color: #ffffff;
-			text-decoration: none;
-		}
-		.button {
-			display: inline-block;
-			background-color: #7289DA;
-			border-radius: 4px;
-			color: #ffffff;
-			font-size: 18px;
-			font-weight: bold;
-			margin-top: 20px;
-			padding: 10px 20px;
-			text-align: center;
-			text-decoration: none;
-			transition: background-color 0.3s ease;
-		}
-		.button:hover {
-			background-color: #677bc4;
-		}
-	</style>
 </head>
 <body>
-	<div class="container">
-		<h1>Access Private Channels - Verify Your Account on IITM Discord</h1>
-		<p>Hello {name},</p>
-		<p>Thank you for joining the IITM Discord Server, the ultimate destination for students to connect, collaborate, and exchange ideas with like-minded individuals.</p>
-		<p>To gain access to our private channels and unlock the full range of resources available on our server, please click the button below to verify your account:</p>
-		<p>If you did not request this verification, you can safely ignore this email. Someone else might have typed your email address by mistake.</p>
-		<a href="https://sinsniwal.me/discord-iitm/verify/{link}" class="button">Verify my account</a>
-		<p>Thank you for your participation in our community.</p>
-		<p>Thanks!<br>Server Bot Developers</p>
-	</div>
+
+    <div style="background-color:transparent;margin:0;padding:0">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0"
+            style="background-color:transparent;background-image:none;background-position:top left;background-size:auto;background-repeat:no-repeat">
+        <tbody><tr><td>
+            <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0"
+                 style="background-color:#1aa19c">
+                <tbody>
+                    <tr>
+                        <td>
+                            <table class="m_3901125283284270825row-content m_3901125283284270825stack"
+                                align="center" border="0" cellpadding="0" cellspacing="0"
+                                 style="background-color:#fbecd3;color:#000;width:640px"
+                                width="640">
+                                <tbody>
+                                    <tr>
+                                        <td class="m_3901125283284270825column" width="100%"
+                                            style="font-weight:400;text-align:left;vertical-align:top;border-top:0;border-right:0;border-bottom:0;border-left:0">
+                                            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                >
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <div align="center">
+                                                                <table border="0" cellpadding="0"
+                                                                    cellspacing="0" 
+                                                                    width="100%">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td
+                                                                                style="font-size:1px;line-height:1px;border-top:4px solid #1aa19c">
+                                                                                <span> </span></td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0"
+                >
+                <tbody>
+                    <tr>
+                        <td>
+                            <table class="m_3901125283284270825row-content m_3901125283284270825stack"
+                                align="center" border="0" cellpadding="0" cellspacing="0"
+                                 style="background-color:#fbecd3;color:#000;width:640px"
+                                width="640">
+                                <tbody>
+                                    <tr>
+                                        <td class="m_3901125283284270825column" width="100%"
+                                            style="font-weight:400;text-align:left;padding-bottom:5px;padding-top:5px;vertical-align:top;border-top:0;border-right:0;border-bottom:0;border-left:0">
+                                            <table width="100%" border="0" cellpadding="20" cellspacing="0"
+                                                >
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <div align="center">
+                                                                <table border="0" cellpadding="0"
+                                                                    cellspacing="0" 
+                                                                    width="100%">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td
+                                                                                style="font-size:1px;line-height:1px;border-top:0 solid #bbb">
+                                                                                <span> </span></td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0"
+                >
+                <tbody>
+                    <tr>
+                        <td>
+                            <table class="m_3901125283284270825row-content m_3901125283284270825stack"
+                                align="center" border="0" cellpadding="0" cellspacing="0"
+                                 style="background-color:#fbecd3;color:#000;width:640px"
+                                width="640">
+                                <tbody>
+                                    <tr>
+                                        <td class="m_3901125283284270825column" width="100%"
+                                            style="font-weight:400;text-align:left;vertical-align:top;border-top:0;border-right:0;border-bottom:0;border-left:0">
+                                            <span class="im">
+                                                <table class="m_3901125283284270825image_block" width="100%"
+                                                    border="0" cellpadding="0" cellspacing="0"
+                                                    >
+                                                    <tbody>
+                                                        <tr>
+                                                            <td
+                                                                style="padding-left:40px;padding-right:40px;width:100%">
+                                                                <div align="center"
+                                                                    style="line-height:10px"><img
+                                                                        class="m_3901125283284270825fullMobileWidth CToWUd"
+                                                                        src="https://ci3.googleusercontent.com/proxy/BAf9aWsTGSnEm1YAlWYWJQ6PFFEeSMRsLKCTQ4JmSMIhxhhESoBFvauDljc8bx5ey_-nvS5YwLffMqQ1gD5M9jzUJttmjJPNLQECjdvjR09l8e2CffJedqf-lOyTUB3jBOLyBnbo2yzK8lVt7_MbUg0kVEup0Q=s0-d-e1-ft#https://d4b7d8e1a0.imgdist.com/public/users/Integrators/BeeProAgency/979973_964624/animatediitm.gif"
+                                                                        style="display:block;height:auto;border:0;width:128px;max-width:100%"
+                                                                        width="128" alt="I'm an image"
+                                                                        title="I'm an image" data-bit="iit">
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <table width="100%" border="0" cellpadding="0"
+                                                    cellspacing="0" >
+                                                    <tbody>
+                                                        <tr>
+                                                            <td style="padding-top:50px">
+                                                                <div align="center">
+                                                                    <table border="0" cellpadding="0"
+                                                                        cellspacing="0" 
+                                                                        width="100%">
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td
+                                                                                    style="font-size:1px;line-height:1px;border-top:0 solid #bbb">
+                                                                                    <span> </span></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </span>
+                                            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                 style="word-break:break-word">
+                                                <tbody>
+                                                    <tr>
+                                                        <td
+                                                            style="padding-bottom:10px;padding-left:40px;padding-right:40px;padding-top:10px">
+                                                            <div style="font-family:sans-serif">
+                                                                <div
+                                                                    style="font-size:12px;font-family:Montserrat,Trebuchet MS,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Tahoma,sans-serif;color:#555;line-height:1.2">
+                                                                    <p
+                                                                        style="margin:0;font-size:16px;text-align:center">
+                                                                        <span
+                                                                            style="font-size:30px;color:#2b303a"><strong>Access
+                                                                                Private Channels - Verify
+                                                                                Your Account on IITM
+                                                                                Discord</strong></span>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                 style="word-break:break-word">
+                                                <tbody>
+                                                    <tr>
+                                                        <td
+                                                            style="padding-bottom:10px;padding-left:40px;padding-right:40px;padding-top:10px">
+                                                            <div style="font-family:sans-serif">
+                                                                <div
+                                                                    style="font-size:12px;font-family:Montserrat,Trebuchet MS,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Tahoma,sans-serif;color:#555;line-height:1.5">
+                                                                    <p
+                                                                        style="margin:0;font-size:14px;text-align:left">
+                                                                        <span
+                                                                            style="color:#808389;font-size:15px">Hello {name},</span></p>
+                                                                    <p
+                                                                        style="margin:0;font-size:14px;text-align:left">
+                                                                        &nbsp;</p>
+                                                                    
+                                                                    <p
+                                                                        style="margin:0;font-size:14px;text-align:left">
+                                                                        <span
+                                                                            style="color:#808389;font-size:15px">Thank
+                                                                            you for joining the IITM Discord
+                                                                            Server, the ultimate destination
+                                                                            for students to connect,
+                                                                            collaborate, and exchange ideas
+                                                                            with like-minded
+                                                                            individuals.</span></p>
+                                                                    <p
+                                                                        style="margin:0;font-size:14px;text-align:left">
+                                                                        &nbsp;</p>
+
+                                                                    <p
+                                                                        style="margin:0;font-size:14px;text-align:left">
+                                                                        <span
+                                                                            style="color:#808389;font-size:15px">To
+                                                                            gain access to our private
+                                                                            channels and unlock the full
+                                                                            range of resources available on
+                                                                            our server, please click the
+                                                                            button below to verify your
+                                                                            account:</span></p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                >
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="padding-top:50px">
+                                                            <div align="center">
+                                                                <table border="0" cellpadding="0"
+                                                                    cellspacing="0" 
+                                                                    width="100%">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td
+                                                                                style="font-size:1px;line-height:1px;border-top:0 solid #bbb">
+                                                                                <span> </span></td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0"
+                >
+                <tbody>
+                    <tr>
+                        <td>
+                            <table class="m_3901125283284270825row-content m_3901125283284270825stack"
+                                align="center" border="0" cellpadding="0" cellspacing="0"
+                                 style="background-color:#fbecd3;color:#000;width:640px"
+                                width="640">
+                                <tbody>
+                                    <tr>
+                                        <td class="m_3901125283284270825column" width="100%"
+                                            style="font-weight:400;text-align:left;vertical-align:top;border-top:0;border-right:0;border-bottom:0;border-left:0">
+                                            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                >
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <div align="center">
+                                                                <table border="0" cellpadding="0"
+                                                                    cellspacing="0" 
+                                                                    width="100%">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td
+                                                                                style="font-size:1px;line-height:1px;border-top:4px solid #1aa19c">
+                                                                                <span> </span></td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                >
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="padding-top:25px">
+                                                            <div align="center">
+                                                                <table border="0" cellpadding="0"
+                                                                    cellspacing="0" 
+                                                                    width="100%">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td
+                                                                                style="font-size:1px;line-height:1px;border-top:0 solid #bbb">
+                                                                                <span> </span></td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                 style="word-break:break-word">
+                                                <tbody>
+                                                    <tr>
+                                                        <td
+                                                            style="padding-bottom:5px;padding-left:10px;padding-right:10px;padding-top:10px">
+                                                            <div style="font-family:sans-serif">
+                                                                <div
+                                                                    style="font-size:12px;font-family:Montserrat,Trebuchet MS,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Tahoma,sans-serif;color:#555;line-height:1.2">
+                                                                    <p
+                                                                        style="margin:0;font-size:16px;text-align:center">
+                                                                        <span
+                                                                            style="color:#2b303a;font-size:18px"><strong>Click
+                                                                                on this Button if you
+                                                                                requested for this
+                                                                                verficaiton.</strong></span>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table><span class="im">
+                <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0"
+                    >
+                    <tbody>
+                        <tr>
+                            <td>
+                                <table class="m_3901125283284270825row-content m_3901125283284270825stack"
+                                    align="center" border="0" cellpadding="0" cellspacing="0"
+                                    
+                                    style="background-color:#fbecd3;color:#000;width:640px" width="640">
+                                    <tbody>
+                                        <tr>
+                                            <td class="m_3901125283284270825column" width="100%"
+                                                style="font-weight:400;text-align:left;vertical-align:top;border-top:0;border-right:0;border-bottom:0;border-left:0">
+                                                <table width="100%" border="0" cellpadding="0"
+                                                    cellspacing="0" >
+                                                    <tbody>
+                                                        <tr>
+                                                            <td
+                                                                style="padding-left:10px;padding-right:10px;padding-top:10px;text-align:center">
+                                                                <div align="center">
+                                                                    <a href="https://sinsniwal.me/discord-iitm/verify/{link}">
+                                                                    <div
+                                                                        style="text-decoration:none;display:inline-block;color:#fff;background-color:#1aa19c;border-radius:60px;width:auto;border-top:0 solid transparent;font-weight:undefined;border-right:0 solid transparent;border-bottom:0 solid transparent;border-left:0 solid transparent;padding-top:15px;padding-bottom:15px;font-family:Montserrat,Trebuchet MS,Lucida Grande,Lucida Sans Unicode,Lucida Sans,Tahoma,sans-serif;font-size:16px;text-align:center;word-break:keep-all">
+                                                                        <span
+                                                                            style="padding-left:30px;padding-right:30px;font-size:16px;display:inline-block;letter-spacing:normal"><span
+                                                                                style="margin:0;word-break:break-word;line-height:32px"><strong>Activate</strong></span></span>
+                                                                    </div></a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <table width="100%" border="0" cellpadding="0"
+                                                    cellspacing="0" >
+                                                    <tbody>
+                                                        <tr>
+                                                            <td
+                                                                style="padding-bottom:12px;padding-top:10px">
+                                                                <div align="center">
+                                                                    <table border="0" cellpadding="0"
+                                                                        cellspacing="0" 
+                                                                        width="100%">
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td
+                                                                                    style="font-size:1px;line-height:1px;border-top:0 solid #bbb">
+                                                                                    <span> </span></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0"
+                    >
+                    <tbody>
+                        <tr>
+                            <td>
+                                <table class="m_3901125283284270825row-content m_3901125283284270825stack"
+                                    align="center" border="0" cellpadding="0" cellspacing="0"
+                                    
+                                    style="background-color:#fbecd3;color:#000;width:640px" width="640">
+                                    <tbody>
+                                        <tr>
+                                            <td class="m_3901125283284270825column" width="100%"
+                                                style="font-weight:400;text-align:left;vertical-align:top;border-top:0;border-right:0;border-bottom:0;border-left:0">
+                                                <table width="100%" border="0" cellpadding="0"
+                                                    cellspacing="0" >
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>
+                                                                <div align="center">
+                                                                    <table border="0" cellpadding="0"
+                                                                        cellspacing="0" 
+                                                                        width="100%">
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td
+                                                                                    style="font-size:1px;line-height:1px;border-top:4px solid #1aa19c">
+                                                                                    <span> </span></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <table class="m_3901125283284270825image_block" width="100%"
+                                                    border="0" cellpadding="0" cellspacing="0"
+                                                    >
+                                                    <tbody>
+                                                        <tr>
+                                                            <td
+                                                                style="width:100%;padding-right:0;padding-left:0">
+                                                                <div align="center"
+                                                                    style="line-height:10px"><img
+                                                                        class="m_3901125283284270825big CToWUd"
+                                                                        src="https://ci6.googleusercontent.com/proxy/4YLzbjhwbR8sEKhb0pQOwbGJR2u7Nc4G3VbtIr-01m-uMCAXIADpittFnDz_FzVi-WaFJ6F_Hh_Tu421RsGGVJX9wfrWLmwG4tBH78Kqu1hmIPYq5uGWLD08=s0-d-e1-ft#https://d1oco4z2z1fhwp.cloudfront.net/templates/default/1361/footer.png"
+                                                                        style="display:block;height:auto;border:0;width:640px;max-width:100%"
+                                                                        width="640" alt="I'm an image"
+                                                                        title="I'm an image" data-bit="iit">
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <table width="100%" border="0" cellpadding="0"
+                                                    cellspacing="0" >
+                                                    <tbody>
+                                                        <tr>
+                                                            <td
+                                                                style="padding-bottom:10px;padding-left:40px;padding-right:40px;padding-top:25px">
+                                                                <div align="center">
+                                                                    <table border="0" cellpadding="0"
+                                                                        cellspacing="0" 
+                                                                        width="100%">
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td
+                                                                                    style="font-size:1px;line-height:1px;border-top:1px solid #555961">
+                                                                                    <span> </span></td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </span>
+        </td></tr></tbody></table>
+    </div>
 </body>
 </html>
