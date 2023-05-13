@@ -1,10 +1,9 @@
-import asyncio
 import io
 import os
 from traceback import TracebackException
-import traceback
 import config
 import dotenv
+import sys
 
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -36,6 +35,7 @@ def log_setup():
         # Add custom logging handlers like rich, maybe in the future??
         handlers = [
             TimedRotatingFileHandler(filename="logs/bot.log", when="d", interval=5),
+            logging.StreamHandler(sys.stdout)
         ]
 
         fmt = logging.Formatter(
@@ -68,15 +68,17 @@ class BotTree(app_commands.CommandTree):
         channel = await interaction.client.fetch_channel(config.DEV_LOGS_CHANNEL)
         traceback_txt = "".join(TracebackException.from_exception(err).format())
         file = discord.File(
-            io.BytesIO(bytes(traceback_txt, encoding="UTF-8")), filename=f"{type(err)}.py"
+            io.BytesIO(traceback_txt.encode()),
+            filename=f"{type(err)}.txt"
         )
 
         embed = discord.Embed(
             title="Unhandled Exception Alert",
-            description=f"Invoked Channel: {interaction.channel.name}" \
-                        f"\nInvoked User: {interaction.user.display_name}" \
-                        f"\n```{traceback_txt[2000:].strip()}```" \ 
-                        
+            description=f"""
+            Invoked Channel: {interaction.channel.name} 
+            \nInvoked User: {interaction.user.display_name} 
+            \n```{traceback_txt[2000:].strip()}```                 
+            """
         )
 
         await channel.send(embed=embed, file=file)
@@ -111,9 +113,10 @@ class IITMBot(commands.AutoShardedBot):
         )
 
         x = cls(
-            commands_prefix=config.BOT_PREFIX,
+            command_prefix=config.BOT_PREFIX,
             intents=intents,
-            activity=activity
+            activity=activity,
+            tree_cls=BotTree
         )
         return x
 
@@ -121,11 +124,12 @@ class IITMBot(commands.AutoShardedBot):
     async def load_extensions(self, *args):
         for filename in os.listdir("cogs/"):
             if filename.endswith(".py"):
-                logger.info(f"Tring to load cogs.{filename[:-3]}")
+                logger.info(f"Trying to load cogs.{filename[:-3]}")
                 try:
                     await self.load_extension(f"cogs.{filename[:-3]}")
+                    logger.info(f"Loaded cogs.{filename[:-3]}")
                 except Exception as e:
-                    logger.exception(f"cogs.{filename[:-3]} failed to load: {e}")
+                    logger.error(f"cogs.{filename[:-3]} failed to load: {e}")
 
     async def close(self):
         """
