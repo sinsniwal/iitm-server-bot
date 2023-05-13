@@ -1,5 +1,8 @@
 import asyncio
+import io
 import os
+from traceback import TracebackException
+import traceback
 import config
 import dotenv
 
@@ -50,6 +53,42 @@ def log_setup():
         for handler in handlers:
             handler.close()
             logger.removeHandler(handler)
+
+class BotTree(app_commands.CommandTree):
+    """
+    Subclass of app_commands.CommandTree to define the behavior for the bot's slash command tree.
+    Handles thrown errors within the tree and interactions between all commands
+    """
+
+    async def log_to_channel(self, interaction: discord.Interaction, err: Exception):
+        """
+        Log error to discord channel defined in config.py
+        """
+
+        channel = await interaction.client.fetch_channel(config.DEV_LOGS_CHANNEL)
+        traceback_txt = "".join(TracebackException.from_exception(err).format())
+        file = discord.File(
+            io.BytesIO(bytes(traceback_txt, encoding="UTF-8")), filename=f"{type(err)}.py"
+        )
+
+        embed = discord.Embed(
+            title="Unhandled Exception Alert",
+            description=f"Invoked Channel: {interaction.channel.name}" \
+                        f"\nInvoked User: {interaction.user.display_name}" \
+                        f"\n```{traceback_txt[2000:].strip()}```" \ 
+                        
+        )
+
+        await channel.send(embed=embed, file=file)
+
+    async def on_error(
+        self, interaction: discord.Interaction, error: app_commands.AppCommandError
+    ):
+        """Handles errors thrown within the command tree"""
+        try:
+            await self.log_to_channel(interaction, error)
+        except Exception as e:
+            await super().on_error(interaction, e)
 
 
 class IITMBot(commands.AutoShardedBot):
