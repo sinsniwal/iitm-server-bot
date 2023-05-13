@@ -115,6 +115,7 @@ class IITMBot(commands.AutoShardedBot):
         x = cls(
             command_prefix=config.BOT_PREFIX,
             intents=intents,
+            owner_id=config.OWNER_ID,
             activity=activity,
             tree_cls=BotTree
         )

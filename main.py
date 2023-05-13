@@ -33,7 +33,7 @@ async def main():
         dotenv.load_dotenv()
         bot = IITMBot._use_default()
         await bot.load_extensions()
-        logger.info("Loaded Extensions")
+        logger.info("Loaded instructions")
         token = os.environ.get("DISCORD_BOT_TOKEN")
         async with bot:
             await bot.start(token, reconnect=True)

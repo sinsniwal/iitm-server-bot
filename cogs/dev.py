@@ -4,6 +4,7 @@ import math
 import textwrap
 import traceback
 import logging
+import config
 
 import discord
 from discord.ext.commands.errors import ExtensionNotFound
@@ -138,17 +139,16 @@ class Dev(commands.Cog):
     @commands.is_owner()
     async def sync_apps(self, ctx: commands.Context):
 
-        await ctx.bot.tree.sync()
-        await ctx.bot.tree.sync(guild=discord.Object(414027124836532234))
+        await ctx.bot.tree.sync(guild=discord.Object(config.PRIMARY_GUILD_ID))
         await ctx.reply("Synced local guild commands")
 
     @commands.command()
     @commands.is_owner()
     async def clear_apps(self, ctx: commands.Context):
 
-        ctx.bot.tree.clear_commands(guild=discord.Object(414027124836532234))
+        ctx.bot.tree.clear_commands(guild=discord.Object(config.PRIMARY_GUILD_ID))
         ctx.bot.tree.clear_commands(guild=None)
-        await ctx.bot.tree.sync(guild=discord.Object(414027124836532234))
+        await ctx.bot.tree.sync(guild=discord.Object(config.PRIMARY_GUILD_ID))
         await ctx.bot.tree.sync()
 
         await ctx.send("cleared all commands")
