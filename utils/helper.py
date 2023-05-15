@@ -10,19 +10,6 @@ import discord
 from discord.ext import commands
 
 
-# Attempt to read the configuration file and retrieve the SendinBlue API key.
-# try:
-#     config = configparser.ConfigParser()
-#     config.read('../config.ini')
-#     SIB_API_KEY=config['send_in_blue']['sib_api_key']
-# except:
-#     config = configparser.ConfigParser()
-#     config.read('config.ini')
-
-SIB_API_KEY=os.environ.get("SIB_API_KEY")
-
-# Attempt to read the configuration file and retrieve the Discord bot token.
-FERNETKEY = os.environ.get("FERNET")
 
 # Set the activity status for the Discord bot.
 activity= cycle([discord.Activity(type=discord.ActivityType.watching,name='Donnie Darko'),discord.Activity(type=discord.ActivityType.listening,name='Traffic')])
@@ -60,7 +47,7 @@ def send_email(name:str,roll_no:str,link:bytes):
     """
     # Set up the configuration for the SendinBlue API.
     configuration = sib_api_v3_sdk.Configuration()
-    configuration.api_key['api-key'] = SIB_API_KEY
+    configuration.api_key['api-key'] =os.environ.get("SIB_API_KEY")
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
     
 	# Set up the email content.

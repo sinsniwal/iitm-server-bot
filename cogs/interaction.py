@@ -1,9 +1,10 @@
 import logging
 import discord
+import os
 import config
 from discord.ext import commands
 import re
-from utils.helper import send_email, FERNETKEY
+from utils.helper import send_email
 from cryptography.fernet import Fernet
 from discord import ui
 
@@ -38,7 +39,7 @@ class Verification(ui.Modal, title='Verfication Link' ):
         """
         logger.info('on_submit')
         # Retrieve the Fernet Key from the config file and create a Fernet cipher
-        cipher = Fernet(FERNETKEY)
+        cipher = Fernet(os.environ.get("FERNET"))
 
         logger.info(cipher)
 
@@ -50,7 +51,6 @@ class Verification(ui.Modal, title='Verfication Link' ):
         data = userRoll+'|'+userID
         data = data.encode()
         enc = cipher.encrypt(data)
-        print(enc)
         # Check if the Roll number is valid
         if re.fullmatch('[0-9][0-9][a-z]*[0-9]*', userRoll) and len(userRoll) in [10, 11]:
             # Assign the appropriate roles to the user based on their number of tries.
