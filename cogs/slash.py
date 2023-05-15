@@ -8,8 +8,8 @@ class Slash(commands.Cog):
     This Class is for Slash Commands.
     """
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
 
     # Help Command (Ephemeral)
     @app_commands.command(name='help', description='Displays list of commands and their usage')
@@ -31,5 +31,5 @@ class Slash(commands.Cog):
         await interaction.response.send_message(embed=output, ephemeral=True)
 
 
-async def setup(client):
-    await client.add_cog(Slash(client))
+async def setup(bot):
+    await bot.add_cog(Slash(bot))
