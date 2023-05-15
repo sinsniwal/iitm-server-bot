@@ -43,8 +43,7 @@ def log_setup():
         )
 
         for handler in handlers:
-            if isinstance(handler, TimedRotatingFileHandler):
-                handler.setFormatter(fmt)
+            handler.setFormatter(fmt)
             logger.addHandler(handler)
 
         yield

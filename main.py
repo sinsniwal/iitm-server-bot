@@ -1,5 +1,6 @@
 import logging
-import os, tools, asyncio
+import os
+import asyncio
 import dotenv
 from bot import IITMBot, log_setup
 
