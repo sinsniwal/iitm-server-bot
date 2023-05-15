@@ -1,9 +1,14 @@
+import logging
 import discord
+import os
+import config
 from discord.ext import commands
 import re
-from tools import send_email, FERNETKEY
+from utils.helper import send_email
 from cryptography.fernet import Fernet
 from discord import ui
+
+logger = logging.getLogger('Email Verification Modal')
 
 class Verification(ui.Modal, title='Verfication Link' ):
     """
@@ -32,8 +37,11 @@ class Verification(ui.Modal, title='Verfication Link' ):
         user and sends a verification email containing a unique verification link
         to the user's email address.
         """
+        logger.info('on_submit')
         # Retrieve the Fernet Key from the config file and create a Fernet cipher
-        cipher = Fernet(FERNETKEY)
+        cipher = Fernet(os.environ.get("FERNET"))
+
+        logger.info(cipher)
 
         # Retrieve the user's Roll number from the text input field and the user's ID from the interaction object
         userRoll = self.roll.value
@@ -43,28 +51,27 @@ class Verification(ui.Modal, title='Verfication Link' ):
         data = userRoll+'|'+userID
         data = data.encode()
         enc = cipher.encrypt(data)
-
         # Check if the Roll number is valid
         if re.fullmatch('[0-9][0-9][a-z]*[0-9]*', userRoll) and len(userRoll) in [10, 11]:
             # Assign the appropriate roles to the user based on their number of tries.
-            dotOne = discord.utils.get(
-                interaction.guild.roles, id=1078208692853420073)
-            if dotOne in interaction.user.roles:
-                dotTwo = discord.utils.get(
-                    interaction.guild.roles, id=1078208892296761404)
-                if dotTwo in interaction.user.roles:
-                    dotThree = discord.utils.get(
-                        interaction.guild.roles, id=1078208973326536724)
-                    if dotThree in interaction.user.roles:
+            dot_one = discord.utils.get(
+                interaction.guild.roles, id=config.DOT_ONE_ROLE)
+            if dot_one in interaction.user.roles:
+                dot_two = discord.utils.get(
+                    interaction.guild.roles, id=config.DOT_TWO_ROLE)
+                if dot_two in interaction.user.roles:
+                    dot_three = discord.utils.get(
+                        interaction.guild.roles, id=config.DOT_THREE_ROLE)
+                    if dot_three in interaction.user.roles:
                         spam = discord.utils.get(
-                            interaction.guild.roles, id=1078208518793994240)
+                            interaction.guild.roles, id=config.SPAM_ROLE)
                         await interaction.user.add_roles(spam)
                     else:
-                        await interaction.user.add_roles(dotThree)
+                        await interaction.user.add_roles(dot_three)
                 else:
-                    await interaction.user.add_roles(dotTwo)
+                    await interaction.user.add_roles(dot_two)
             else:
-                await interaction.user.add_roles(dotOne)
+                await interaction.user.add_roles(dot_one)
 
             # Send a verification email containing a unique verification link to the user's email address
             send_email(interaction.user.name, userRoll, enc)
@@ -82,17 +89,18 @@ class Verification(ui.Modal, title='Verfication Link' ):
         await interaction.response.send_message("We apologize, but your session has expired. Please try again and ensure that you enter your email within 5 minutes.", ephemeral=True)
         return
 
-    async def on_error(self, interaction: discord.Interaction, error: Exception, ) -> None:
-        """
-        Called if there is an error while processing the user's submission.
-        """
-        await interaction.response.send_message("We apologize for the inconvenience. Please contact a moderator and inform them about the error you encountered so that we can fix it.", ephemeral=True)
-        return
+    # async def on_error(self, interaction: discord.Interaction, error: Exception, ) -> None:
+    #     """
+    #     Called if there is an error while processing the user's submission.
+    #     """
+    #     await interaction.response.send_message("We apologize for the inconvenience. Please contact a moderator and inform them about the error you encountered so that we can fix it.", ephemeral=True)
+    #     return
 
 
 class Interaction(commands.Cog):
     def __init__(self,client):
         self.client=client
+        self.logger = logging.getLogger("Interaction")
     
     @commands.Cog.listener()
     async def on_interaction(self,interaction: discord.Interaction):
@@ -101,13 +109,14 @@ class Interaction(commands.Cog):
         """
         if interaction.type == discord.InteractionType.component:
             if interaction.data["custom_id"] == "verify_email":
+                self.logger.info("Interaction, button")
                 # Get the required roles for verification and spam prevention
-                Qualifier = discord.utils.get(
-                    interaction.guild.roles, id=780935056540827729)
+                qualifier = discord.utils.get(
+                    interaction.guild.roles, id=config.QUALIFIER_ROLE)
                 spam = discord.utils.get(
-                    interaction.guild.roles, id=1078208518793994240)
+                    interaction.guild.roles, id=config.SPAM_ROLE)
                 # Check if user has already been verified and is not marked as a spammer
-                if Qualifier in interaction.user.roles:
+                if qualifier in interaction.user.roles:
                     if spam not in interaction.user.roles:
                         await interaction.response.send_modal(Verification())
                     else:
