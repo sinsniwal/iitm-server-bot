@@ -1,7 +1,10 @@
+import config
 import discord
 from discord.ext import commands
-from datetime import datetime
-from embeds import verification_embed_dm
+
+from utils.helper import admin_only, verification_embed_dm
+
+
 class Menu(discord.ui.View):
     """
     A Discord UI view that displays a menu for EMAIL VERIFICATION.
@@ -15,29 +18,28 @@ class Menu(discord.ui.View):
             label="Verify", custom_id='verify_email', style=discord.ButtonStyle.blurple))
 
 
-class Message(commands.Cog):
-    def __init__(self,client):
-        self.client=client
+class Verification(commands.Cog):
 
+    def __init__(self,bot) -> None:
+        self.bot = bot
+
+    @commands.command()
+    @admin_only()
+    async def create(self,ctx):
+        await ctx.channel.send("Join our exclusive community and gain access to private channels and premium content by verifying your email address. Click the button below to complete the process and unlock all the benefits of being a part of our server.", view=Menu())
+
+    @commands.command()
+    @admin_only()
+    async def send(self, ctx):
+        embed=verification_embed_dm()
+        await ctx.author.send(embed=embed)
 
 
     @commands.Cog.listener()
-    async def on_message(self,message: discord.Message):
-        """
-        An event function that triggers whenever a new message is sent in the server. It updates user roles based on the message
-        contents and also sends a message when a specific user sends a message.
-        """
-        # Admin can create a new verification modal by sending a message with the prefix ^create
-        if message.author.id == 730762300503490650: # ID of Admin
-            if message.content[0:7] == '^create':
-                await message.channel.send("Join our exclusive community and gain access to private channels and premium content by verifying your email address. Click the button below to complete the process and unlock all the benefits of being a part of our server.", view=Menu())
-        
-            elif message.content[0:5] =="^send":
-                embed=verification_embed_dm()
-                await message.author.send(embed=embed)
-        # When somes verfies there email address by clicking the verification link, the email
-        # verification script sends a message to the server in the format: user_id|roll|old_user
-        elif message.author.id == 1078142811725123594: # ID of ServerBot
+    async def on_message(self, message):
+        if message.channel.id != config.AUTOMATE_CHANNEL:
+            return
+        if message.author.id == self.bot.user.id: # ID of ServerBot
             data = message.content
             await message.delete()
 
@@ -45,7 +47,7 @@ class Message(commands.Cog):
             user_id, roll, old_user = data.split("|")
             user_id = int(user_id)
 
-            guild = self.client.get_guild(762774569827565569) # ID of the server
+            guild = self.bot.get_guild(762774569827565569) # ID of the server
             user = guild.get_member(user_id)
             
             # Remove all the roles from the user, except the @everyone role
@@ -80,5 +82,5 @@ class Message(commands.Cog):
             embed = verification_embed_dm()
             await user.send(embed=embed)
 
-async def setup(client):
-    await client.add_cog(Message(client))
+async def setup(bot):
+    await bot.add_cog(Verification(bot))
