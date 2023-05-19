@@ -130,6 +130,7 @@ class Dev(commands.Cog):
             self.logger.error("{}: {}".format(type(e).__name__, e))
 
     @commands.command(hidden=True)
+    @commands.is_owner()
     async def kill(self, ctx: commands.Context):
         """Kill the bot"""
         await ctx.send("Bravo 6, going dark o7")
