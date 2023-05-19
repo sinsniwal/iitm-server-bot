@@ -39,7 +39,8 @@ class Verification(commands.Cog):
     async def on_message(self, message):
         if message.channel.id != config.AUTOMATE_CHANNEL:
             return
-        if message.author.id == self.bot.user.id: # ID of ServerBot
+        # Compare with ID of Webhook used by Webapp to send the msg
+        if message.author.id == config.AUTOMATE_WEBHOOK_ID: 
             data = message.content
             await message.delete()
 
