@@ -116,6 +116,7 @@ class IITMBot(commands.AutoShardedBot):
             intents=intents,
             owner_id=config.OWNER_ID,
             activity=activity,
+            help_command=None,
             tree_cls=BotTree
         )
         return x
