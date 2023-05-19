@@ -89,17 +89,17 @@ class Verification(ui.Modal, title='Verfication Link' ):
         await interaction.response.send_message("We apologize, but your session has expired. Please try again and ensure that you enter your email within 5 minutes.", ephemeral=True)
         return
 
-    # async def on_error(self, interaction: discord.Interaction, error: Exception, ) -> None:
-    #     """
-    #     Called if there is an error while processing the user's submission.
-    #     """
-    #     await interaction.response.send_message("We apologize for the inconvenience. Please contact a moderator and inform them about the error you encountered so that we can fix it.", ephemeral=True)
-    #     return
+    async def on_error(self, interaction: discord.Interaction, error: Exception, ) -> None:
+        """
+        Called if there is an error while processing the user's submission.
+        """
+        await interaction.response.send_message("We apologize for the inconvenience. Please contact a moderator and inform them about the error you encountered so that we can fix it.", ephemeral=True)
+        return
 
 
 class Interaction(commands.Cog):
-    def __init__(self,client):
-        self.client=client
+    def __init__(self,bot):
+        self.bot=bot
         self.logger = logging.getLogger("Interaction")
     
     @commands.Cog.listener()
@@ -125,5 +125,5 @@ class Interaction(commands.Cog):
                     await interaction.response.send_message("You are already verified on this server.Please contact the server staff if you have any questions or concerns.", ephemeral=True)
 
 
-async def setup(client):
-    await client.add_cog(Interaction(client))
+async def setup(bot):
+    await bot.add_cog(Interaction(bot))
