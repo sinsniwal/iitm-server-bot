@@ -10,7 +10,8 @@ from discord import ui
 
 logger = logging.getLogger('Email Verification Modal')
 
-class Verification(ui.Modal, title='Verfication Link' ):
+
+class Verification(ui.Modal, title='Verfication Link'):
     """
     A UI modal that prompts the user to enter their IITMadras Roll number and
     sends a verification email containing a unique verification link to the
@@ -52,7 +53,8 @@ class Verification(ui.Modal, title='Verfication Link' ):
         data = data.encode()
         enc = cipher.encrypt(data)
         # Check if the Roll number is valid
-        if re.fullmatch('[0-9][0-9][a-z]*[0-9]*', userRoll) and len(userRoll) in [10, 11]:
+        # ignore the case of the Roll number and check if it matches the regex pattern using re.LOWERCASE
+        if re.fullmatch('[0-9][0-9][a-z]*[0-9]*', userRoll, re.IGNORECASE) and len(userRoll) in [10, 11]:
             # Assign the appropriate roles to the user based on their number of tries.
             dot_one = discord.utils.get(
                 interaction.guild.roles, id=config.DOT_ONE_ROLE)
@@ -98,12 +100,12 @@ class Verification(ui.Modal, title='Verfication Link' ):
 
 
 class Interaction(commands.Cog):
-    def __init__(self,bot):
-        self.bot=bot
+    def __init__(self, bot):
+        self.bot = bot
         self.logger = logging.getLogger("Interaction")
-    
+
     @commands.Cog.listener()
-    async def on_interaction(self,interaction: discord.Interaction):
+    async def on_interaction(self, interaction: discord.Interaction):
         """
         Handles user interactions with the bot, specifically those related to verifying email addresses
         """
