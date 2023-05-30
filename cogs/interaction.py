@@ -45,7 +45,7 @@ class Verification(ui.Modal, title='Verfication Link'):
         logger.info(cipher)
 
         # Retrieve the user's Roll number from the text input field and the user's ID from the interaction object
-        userRoll = self.roll.value.lower()
+        userRoll = self.roll.value
         userID = str(interaction.user.id)
 
         # Combine the user's Roll number and ID and encrypt it using the Fernet cipher
@@ -53,7 +53,8 @@ class Verification(ui.Modal, title='Verfication Link'):
         data = data.encode()
         enc = cipher.encrypt(data)
         # Check if the Roll number is valid
-        if re.fullmatch('[0-9][0-9][a-z]*[0-9]*', userRoll) and len(userRoll) in [10, 11]:
+        # ignore the case of the Roll number and check if it matches the regex pattern using re.LOWERCASE
+        if re.fullmatch('[0-9][0-9][a-z]*[0-9]*', userRoll, re.IGNORECASE) and len(userRoll) in [10, 11]:
             # Assign the appropriate roles to the user based on their number of tries.
             dot_one = discord.utils.get(
                 interaction.guild.roles, id=config.DOT_ONE_ROLE)
