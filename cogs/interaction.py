@@ -10,7 +10,8 @@ from discord import ui
 
 logger = logging.getLogger('Email Verification Modal')
 
-class Verification(ui.Modal, title='Verfication Link' ):
+
+class Verification(ui.Modal, title='Verfication Link'):
     """
     A UI modal that prompts the user to enter their IITMadras Roll number and
     sends a verification email containing a unique verification link to the
@@ -44,7 +45,7 @@ class Verification(ui.Modal, title='Verfication Link' ):
         logger.info(cipher)
 
         # Retrieve the user's Roll number from the text input field and the user's ID from the interaction object
-        userRoll = self.roll.value
+        userRoll = self.roll.value.lower()
         userID = str(interaction.user.id)
 
         # Combine the user's Roll number and ID and encrypt it using the Fernet cipher
@@ -98,12 +99,12 @@ class Verification(ui.Modal, title='Verfication Link' ):
 
 
 class Interaction(commands.Cog):
-    def __init__(self,bot):
-        self.bot=bot
+    def __init__(self, bot):
+        self.bot = bot
         self.logger = logging.getLogger("Interaction")
-    
+
     @commands.Cog.listener()
-    async def on_interaction(self,interaction: discord.Interaction):
+    async def on_interaction(self, interaction: discord.Interaction):
         """
         Handles user interactions with the bot, specifically those related to verifying email addresses
         """
