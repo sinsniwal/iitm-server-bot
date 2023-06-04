@@ -3,15 +3,22 @@ name: phraseActions
 on:
   issue_comment:
     types: created
-    
+
 jobs:
 
   assign-commentor:
+
+    permissions:
+      issues: write
+
     runs-on: ubuntu-latest
+
     if: |
-      startsWith(github.event.comment.body, '/assign me ') ||
-      startsWith(github.event.comment.body, '/assign me ')
+      startsWith(github.event.comment.body, '/assignme') ||
+      startsWith(github.event.comment.body, '/assign me')
+
     steps:
+    
       - name: Assigning to commenter
         run: |
           curl \
