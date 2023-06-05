@@ -51,33 +51,31 @@ class Verification(commands.Cog):
             guild = self.bot.get_guild(762774569827565569) # ID of the server
             user = guild.get_member(user_id)
             
-            # Remove all the roles from the user, except the @everyone role
-            for role in user.roles[1:]:
-                await user.remove_roles(role)
-            if roll[2] == 'f':
-                Foundational = 780875583214321684
-                role = discord.utils.get(guild.roles, id=Foundational)
-                await user.add_roles(role)  # Foundational
-            elif roll[3] == 'p':
-                Programming = 924703833693749359
-                role = discord.utils.get(guild.roles, id=Programming)
-                await user.add_roles(role)  # Diploma Programming
-            elif roll[3] == 's':
-                Science = 924703232817770497
-                role = discord.utils.get(guild.roles, id=Science)
-                await user.add_roles(role)  # Diploma Science
+            _roles = {
+                'f': 780875583214321684, # Foundational
+                'p': 924703833693749359, # Diploma Programming
+                's': 924703232817770497,  # Diploma Science
+                '_': 780935056540827729 # Qualifier
+            }
+            try:
+                role_id = _roles[roll[2]]
+            except KeyError:
+                # shouldn't happen, but default to Qualifier just in case
+                role_id = _roles['_']
+            role = guild.get_role(role_id)
+            if role:
+                await user.edit(roles=[role])
 
             # If other users using the same email address are present in the server, remove their roles
             if old_user != 'None':
                 if old_user != str(user_id):
                     old_user = int(old_user)
-                    Qualifier = 780935056540827729
-                    Qualifier = discord.utils.get(guild.roles, id=Qualifier)
                     mem = guild.get_member(old_user)
                     if mem:
-                        for role in mem.roles[1:]:
-                            await mem.remove_roles(role)
-                        await mem.add_roles(Qualifier)  # Qualifier
+                        role = guild.get_role(_roles['_'])
+                        if role is None:
+                            raise RuntimeError('Qualifier role not found???')
+                        await mem.edit(roles=[role])  # Qualifier
 
             # Send DM to the user
             embed = verification_embed_dm()
