@@ -37,7 +37,7 @@ class Dev(commands.Cog):
         return f'```py\n{e.text}{"^":>{e.offset}}\n{e.__class__.__name__}: {e}```'
 
     @commands.is_owner()
-    @commands.command(pass_context=True, name="eval")
+    @commands.command(name="eval")
     async def eval(self, ctx: commands.Context, *, body: str):
         """Evaluates a code"""
         env = {
