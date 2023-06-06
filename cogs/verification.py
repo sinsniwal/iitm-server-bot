@@ -57,14 +57,19 @@ class Verification(commands.Cog):
                 's': 924703232817770497,  # Diploma Science
                 '_': 780935056540827729 # Qualifier
             }
+            
+            # sacrifice a *little* bit of readability in the name of EAFP
+            # also, exception handling is free since 3.11
             try:
                 role_id = _roles[roll[2]]
             except KeyError:
-                # shouldn't happen, but default to Qualifier just in case
-                role_id = _roles['_']
-            role = guild.get_role(role_id)
-            if role:
-                await user.edit(roles=[role])
+                try:
+                    role_id = _roles[roll[3]]
+                except KeyError:
+                    # shouldn't happen, but default to Qualifier just in case
+                    role_id = _roles['_']
+
+            await user.edit(roles=[discord.Object(role_id)])
 
             # If other users using the same email address are present in the server, remove their roles
             if old_user != 'None':
@@ -72,10 +77,7 @@ class Verification(commands.Cog):
                     old_user = int(old_user)
                     mem = guild.get_member(old_user)
                     if mem:
-                        role = guild.get_role(_roles['_'])
-                        if role is None:
-                            raise RuntimeError('Qualifier role not found???')
-                        await mem.edit(roles=[role])  # Qualifier
+                        await mem.edit(roles=[discord.Object(_roles['_'])])  # Qualifier
 
             # Send DM to the user
             embed = verification_embed_dm()
