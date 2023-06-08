@@ -22,12 +22,19 @@ class Verification(commands.Cog):
 
     def __init__(self,bot) -> None:
         self.bot = bot
+        self._roles = {
+            'f': 780875583214321684, # Foundational
+            'p': 924703833693749359, # Diploma Programming
+            's': 924703232817770497,  # Diploma Science
+            '_': 780935056540827729 # Qualifier
+        }
+
 
     @commands.command()
     @admin_only()
     async def create(self,ctx):
         await ctx.channel.send("Join our exclusive community and gain access to private channels and premium content by verifying your email address. Click the button below to complete the process and unlock all the benefits of being a part of our server.", view=Menu())
-
+    
     @commands.command()
     @admin_only()
     async def send(self, ctx):
@@ -51,23 +58,17 @@ class Verification(commands.Cog):
             guild = self.bot.get_guild(762774569827565569) # ID of the server
             user = guild.get_member(user_id)
             
-            _roles = {
-                'f': 780875583214321684, # Foundational
-                'p': 924703833693749359, # Diploma Programming
-                's': 924703232817770497,  # Diploma Science
-                '_': 780935056540827729 # Qualifier
-            }
-            
+                        
             # sacrifice a *little* bit of readability in the name of EAFP
             # also, exception handling is free since 3.11
             try:
-                role_id = _roles[roll[2]]
+                role_id = self._roles[roll[2]]
             except KeyError:
                 try:
-                    role_id = _roles[roll[3]]
+                    role_id = self._roles[roll[3]]
                 except KeyError:
                     # shouldn't happen, but default to Qualifier just in case
-                    role_id = _roles['_']
+                    role_id = self._roles['_']
 
             await user.edit(roles=[discord.Object(role_id)])
 
@@ -77,7 +78,7 @@ class Verification(commands.Cog):
                     old_user = int(old_user)
                     mem = guild.get_member(old_user)
                     if mem:
-                        await mem.edit(roles=[discord.Object(_roles['_'])])  # Qualifier
+                        await mem.edit(roles=[discord.Object(self._roles['_'])])  # Qualifier
 
             # Send DM to the user
             embed = verification_embed_dm()
