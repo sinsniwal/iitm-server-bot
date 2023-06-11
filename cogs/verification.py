@@ -28,23 +28,23 @@ class Verification(commands.Cog):
 
     def __init__(self,bot) -> None:
         self.bot = bot
-        self.qualifier = discord.Object(780935056540827729)
-        self.foundational = discord.Object(780875583214321684)
-        self.programming = discord.Object(924703833693749359)
-        self.science = discord.Object(924703232817770497)
+        self._roles = {
+            'f': 780875583214321684, # Foundational
+            'dp': 924703833693749359, # Diploma Programming
+            'ds': 924703232817770497,  # Diploma Science
+            '_': 780935056540827729 # Qualifier
+        }
     
-    async def cog_load(self) -> None:
-        self.bot.add_view(Menu())
-        
     @property
     def guild(self) -> discord.Guild:
-        return self.bot.get_guild(762774569827565569)  # type: ignore # can't be None
+        return self.bot.get_guild(762774569827565569)
+
 
     @commands.command()
     @admin_only()
     async def create(self,ctx):
         await ctx.channel.send("Join our exclusive community and gain access to private channels and premium content by verifying your email address. Click the button below to complete the process and unlock all the benefits of being a part of our server.", view=Menu())
-
+    
     @commands.command()
     @admin_only()
     async def send(self, ctx):
@@ -54,25 +54,17 @@ class Verification(commands.Cog):
     async def nuke_existing_user(self, user_id: int) -> None:
         mem = self.guild.get_member(user_id)
         if mem:
-            await mem.edit(roles=[self.qualifier])
+            await mem.edit(roles=[discord.Object(self._roles['_'])])
     
     async def verify(self, user_id: int, course: str) -> None:
         user = self.guild.get_member(user_id)
         if not user:
             raise ValueError(f"User with ID {user_id} not found in the server, but successfully verified???")
-        role = None
-        if course == 'f':
-            role = self.foundational
-        elif course == 'dp':
-            role = self.programming
-        elif course == 'ds':
-            role = self.science
-        if role is None:
+        try:
+            role = self._roles[course]
+        except KeyError:
             return
-        await user.edit(roles=[role])
-        embed = verification_embed_dm()
-        await user.send(embed=embed)
-
+        await user.edit(roles=[discord.Object(role)])
 
 async def setup(bot):
     await bot.add_cog(Verification(bot))
