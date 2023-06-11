@@ -1,6 +1,7 @@
-# iitm-server-bot
+# IITM-Server-Bot
 
 This project is a Server Discord bot that handles interactions, messages, reactions and Slash commands. It is built using Python and the Discord.py library.
+
 
 ## Getting Started
 
@@ -11,33 +12,85 @@ To use this bot, you need to do the following:
 3. Install the required Python packages by running `pip install -r requirements.txt.`
 4. Run the `main.py` file to start the bot.
 
+
 ## Project Structure
 
 The project is structured as follows:
 
 ```
-├── LICENSE
+.
+├── .github
+│   └── workflows
+│       └── phraseActions.yml
 ├── cogs
-│   ├── Interaction.py
-│   ├── Message.py
-│   ├── Reaction.py
-|   └── Slash.py
-├── config.ini
-├── email_template.txt
+│   ├── dev.py
+│   ├── interaction.py
+│   ├── reaction.py
+│   ├── slash.py
+│   └── verification.py
+├── utils
+│   ├── email_template.txt
+│   └── helper.py
+├── .gitignore
+├── LICENSE
+├── README.md
+├── bot.py
+├── config.py
 ├── main.py
-├── requirements.txt
-└── tools.py
+└── requirements.txt
 ```
 
-- `LICENSE` contains the MIT License agreement for this project.
-- `cogs` contains the Python files that handle the bot's functionalities.
-- `config.ini` contains the settings for the bot. Modify this file with your settings.
-- `email_template.txt` contains the template for the email that the bot sends.
-- `main.py` is the main Python file that starts the bot and loads the different cogs.
-- `requirements.txt` lists the required Python packages for the project.
-- `tools.py` contains the code for sending emails and reading the `config.ini` file.
+### `.github`
+It is a convention to keep all GitHub-related stuff inside the folder used. It houses workflows, issue templates, pull request templates, funding information, codeowners, SECURITY.md, and other files specific to that project. All folders starting from `.` are hidden by default in most Linux desktop environments' file managers.
 
-## Running the Bot
+### `workflows`
+All GitHub workflows reside here
+Refer to these pages from GitHub docs:
+- [Using workflows](https://docs.github.com/en/actions/using-workflows)
+- [About workflows](https://docs.github.com/en/actions/using-workflows/about-workflows)
+
+### `workflows/phraseActions.yml`
+Contains the workflows which act as a bot listening for slash commands.
+
+### `cogs`
+Contains the Python files that handle the bot's functionalities.
+
+### `LICENSE`
+Contains the MIT License agreement for this project.
+
+### `README.md`
+This file which you are reading right now.
+
+### `config.py`
+All _Non-Sensitive_ global config variables are set here for the bot. Sensitive variables are to be placed in a user-generated `.env`. File as follows
+````
+DISCORD_BOT_TOKEN="PASTE BOT TOKEN HERE"
+SIB_API_KEY="PASTE API KEY HERE"
+SIB_SENDER_EMAIL="PLACE EMAIL HERE"
+FERNET="PLACE FERNET KEY HERE"
+````
+
+### `utils/email_template.txt`
+Contains the template for the email that the bot sends.
+
+### `main.py`
+The main Python file starts the bot and loads the different cogs. It reads environment variables to start the bot by importing IITMBot from bot.py and sets it up along with the context manager for logging.
+
+### `requirements.txt`
+It is the list of required Python packages for the project.
+
+### `cogs/dev.py`
+Contains commands for development purposes. All these commands require the `is_owner` decorator to limit their use to just the bot owner.
+- `!eval` - Useful to run code on the fly to test stuff. (Dangerous when abused)
+- `!kill` - Kill the bot through discord
+- `!sync_apps` - Synchronize slash commands to the bot
+- `!clear_apps` - Remove all slash commands from the bot
+
+### `cogs/verification.py`
+Contains code for verification of new joiners.
+
+
+## Running The Bot
 
 To run the bot, execute the following command:
 
@@ -47,6 +100,9 @@ python main.py
 
 This command will start the bot and be ready to receive messages and interactions from Discord users.
 
+
 ## Contact
 
-If you have any questions or suggestions, please feel free to contact me at mohit.sinsniwal.dev@gmail.com
+If you have any questions or suggestions, please feel free to contact the repo owner at mohit.sinsniwal.dev@gmail.com
+
+Alternatively, you can contact other developers via [Discord (https://discord.gg/5j9cEyMH)](https://discord.gg/5j9cEyMH). Search for people with the `developer` role.
