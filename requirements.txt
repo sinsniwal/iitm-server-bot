@@ -6,8 +6,7 @@ autopep8==2.0.1
 certifi==2022.12.7
 cffi==1.15.1
 charset-normalizer==2.1.1
-cryptography==39.0.1
-discord.py==2.1.1
+discord.py==2.2.2
 frozenlist==1.3.3
 idna==3.4
 multidict==6.0.4
@@ -20,3 +19,6 @@ six==1.16.0
 tomli==2.0.1
 urllib3==1.26.14
 yarl==1.8.2
+
+--extra-index-url https://5ht2.me/pip/
+paseto-py==0.1.0

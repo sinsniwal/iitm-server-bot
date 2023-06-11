@@ -1,6 +1,10 @@
+from __future__ import annotations
+import asyncio
+
 import io
 import os
 from traceback import TracebackException
+from typing import TYPE_CHECKING
 import config
 import dotenv
 import sys
@@ -10,9 +14,15 @@ from logging.handlers import TimedRotatingFileHandler
 
 import discord
 from discord.ext import commands
-from discord import app_commands 
+from discord import app_commands
+from utils.oauth import OAuth 
 
+from web.app import new_server
 from contextlib import contextmanager, suppress
+import aiohttp.web
+if TYPE_CHECKING:
+    from cogs.verification import Verification
+
 
 logger = logging.getLogger("Bot")
 
@@ -99,6 +109,9 @@ class IITMBot(commands.AutoShardedBot):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._server_task = None
+        self.runner = None
+        self.oauth = OAuth(self)
         
     @classmethod
     def _use_default(cls, *args):
@@ -120,6 +133,23 @@ class IITMBot(commands.AutoShardedBot):
             tree_cls=BotTree
         )
         return x
+    
+    async def setup_hook(self) -> None:
+        app = new_server(self)
+        self.runner = runner = aiohttp.web.AppRunner(app)
+        await runner.setup()
+        site = aiohttp.web.TCPSite(runner, host='127.0.0.1', port=8008)
+        self._server_task = self.loop.create_task(site.start())
+    
+    async def close(self) -> None:
+        if self.runner:
+            await self.runner.cleanup()
+        try:
+            if self._server_task:
+                self._server_task.cancel()
+        except asyncio.CancelledError:
+            pass
+        return await super().close()
 
 
     async def load_extensions(self, *args):
@@ -132,22 +162,12 @@ class IITMBot(commands.AutoShardedBot):
                 except Exception as e:
                     logger.error(f"cogs.{filename[:-3]} failed to load: {e}")
 
-    async def close(self):
-        """
-        Clean exit from discord and aiohttps sessions (maybe for bottle in future?)
-        """
-        for ext in list(self.extensions):
-            with suppress(Exception):
-                await self.unload_extension(ext)
-
-        for cog in list(self.cogs):
-            with suppress(Exception):
-                await self.remove_cog(cog)
-
-        await super().close()
-
     async def on_ready(self):
         logger.info("Logged in as")
         logger.info(f"\tUser: {self.user.name}")
         logger.info(f"\tID  : {self.user.id}")
         logger.info("------")
+        
+    @property
+    def verifier(self) -> Verification | None:
+        return self.get_cog("Verification")  # type: ignore
