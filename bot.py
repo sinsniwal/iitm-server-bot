@@ -1,32 +1,33 @@
-import io
-import os
-from traceback import TracebackException
-import config
-import dotenv
-import sys
+from __future__ import annotations
 
+import io
 import logging
+import os
+import sys
+from contextlib import contextmanager
 from logging.handlers import TimedRotatingFileHandler
+from traceback import TracebackException
 
 import discord
+from discord import app_commands
 from discord.ext import commands
-from discord import app_commands 
 
-from contextlib import contextmanager, suppress
+import config
+
 
 logger = logging.getLogger("Bot")
+
 
 @contextmanager
 def log_setup():
     """
     Context manager that sets up file logging
     """
+    logger = logging.getLogger()
     try:
-        dotenv.load_dotenv()
         logging.getLogger("discord").setLevel(logging.INFO)
         logging.getLogger("discord.http").setLevel(logging.INFO)
 
-        logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
         dtfmt = "%Y-%m-%d %H:%M:%S"
         if not os.path.isdir("logs/"):
@@ -35,12 +36,10 @@ def log_setup():
         # Add custom logging handlers like rich, maybe in the future??
         handlers = [
             TimedRotatingFileHandler(filename="logs/bot.log", when="d", interval=5),
-            logging.StreamHandler(sys.stdout)
+            logging.StreamHandler(sys.stdout),
         ]
 
-        fmt = logging.Formatter(
-            "[{asctime}] [{levelname:<7}] {name}: {message}", dtfmt, style="{"
-        )
+        fmt = logging.Formatter("[{asctime}] [{levelname:<7}] {name}: {message}", dtfmt, style="{")
 
         for handler in handlers:
             handler.setFormatter(fmt)
@@ -53,7 +52,8 @@ def log_setup():
             handler.close()
             logger.removeHandler(handler)
 
-class BotTree(app_commands.CommandTree):
+
+class BotTree(app_commands.CommandTree["IITMBot"]):
     """
     Subclass of app_commands.CommandTree to define the behavior for the bot's slash command tree.
     Handles thrown errors within the tree and interactions between all commands
@@ -64,52 +64,44 @@ class BotTree(app_commands.CommandTree):
         Log error to discord channel defined in config.py
         """
 
-        channel = await interaction.client.fetch_channel(config.DEV_LOGS_CHANNEL)
+        channel: discord.TextChannel = interaction.client.get_channel(config.DEV_LOGS_CHANNEL)  # type: ignore
         traceback_txt = "".join(TracebackException.from_exception(err).format())
-        file = discord.File(
-            io.BytesIO(traceback_txt.encode()),
-            filename=f"{type(err)}.txt"
-        )
+        file = discord.File(io.BytesIO(traceback_txt.encode()), filename=f"{type(err)}.txt")
 
         embed = discord.Embed(
             title="Unhandled Exception Alert",
             description=f"""
-            Invoked Channel: {interaction.channel.name} 
+            Invoked Channel: {interaction.channel} 
             \nInvoked User: {interaction.user.display_name} 
             \n```{traceback_txt[2000:].strip()}```                 
-            """
+            """,
         )
 
         await channel.send(embed=embed, file=file)
 
-    async def on_error(
-        self, interaction: discord.Interaction, error: app_commands.AppCommandError
-    ):
+    async def on_error(self, interaction: discord.Interaction["IITMBot"], error: app_commands.AppCommandError):
         """Handles errors thrown within the command tree"""
         try:
             await self.log_to_channel(interaction, error)
-        except Exception as e:
-            await super().on_error(interaction, e)
+        except Exception:
+            await super().on_error(interaction, error)
 
 
 class IITMBot(commands.AutoShardedBot):
     """
-    Main bot. invoked in runner (main.py) 
+    Main bot. invoked in runner (main.py)
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
+    user: discord.ClientUser
+
     @classmethod
-    def _use_default(cls, *args):
+    def _use_default(cls):
         """
         Create an instance of IITMBot with base configuration
         """
 
         intents = discord.Intents.all()
-        activity = discord.Activity(
-            type=discord.ActivityType.watching, name=config.DEFAULT_ACTIVITY_TEXT
-        )
+        activity = discord.Activity(type=discord.ActivityType.watching, name=config.DEFAULT_ACTIVITY_TEXT)
 
         x = cls(
             command_prefix=config.BOT_PREFIX,
@@ -117,12 +109,11 @@ class IITMBot(commands.AutoShardedBot):
             owner_id=config.OWNER_ID,
             activity=activity,
             help_command=None,
-            tree_cls=BotTree
+            tree_cls=BotTree,
         )
         return x
 
-
-    async def load_extensions(self, *args):
+    async def load_extensions(self):
         for filename in os.listdir("cogs/"):
             if filename.endswith(".py"):
                 logger.info(f"Trying to load cogs.{filename[:-3]}")
@@ -131,20 +122,6 @@ class IITMBot(commands.AutoShardedBot):
                     logger.info(f"Loaded cogs.{filename[:-3]}")
                 except Exception as e:
                     logger.error(f"cogs.{filename[:-3]} failed to load: {e}")
-
-    async def close(self):
-        """
-        Clean exit from discord and aiohttps sessions (maybe for bottle in future?)
-        """
-        for ext in list(self.extensions):
-            with suppress(Exception):
-                await self.unload_extension(ext)
-
-        for cog in list(self.cogs):
-            with suppress(Exception):
-                await self.remove_cog(cog)
-
-        await super().close()
 
     async def on_ready(self):
         logger.info("Logged in as")
