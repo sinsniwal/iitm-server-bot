@@ -45,7 +45,7 @@ class Verification(ui.Modal, title='Verfication Link'):
         logger.info(cipher)
 
         # Retrieve the user's Roll number from the text input field and the user's ID from the interaction object
-        userRoll = self.roll.value
+        userRoll = self.roll.value.strip()
         userID = str(interaction.user.id)
 
         # Combine the user's Roll number and ID and encrypt it using the Fernet cipher
