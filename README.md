@@ -8,10 +8,11 @@ This project is a Server Discord bot that handles interactions, messages, reacti
 To use this bot, you need to do the following:
 
 1. Clone this repository to your local machine.
-2. Add the required secrets to `.env.example`
-3. Rename `.env.example` to `.env`
-4. Install the required Python packages by running `pip install -r requirements.txt.`
-5. Run the `main.py` file to start the bot.
+2. Modify `config.py` with your settings.
+3. Add the required secrets to `.env.example`
+4. Rename `.env.example` to `.env`
+5. Install the required Python packages by running `pip install -r requirements.txt.`
+6. Run the `main.py` file to start the bot.
 
 
 ## Project Structure
