@@ -58,16 +58,16 @@ class Verification(ui.Modal, title="Verfication Link"):
         logger.info(cipher)
 
         # Retrieve the user's Roll number from the text input field and the user's ID from the interaction object
-        userRoll = self.roll.value.strip()
-        userID = str(interaction.user.id)
+        user_roll = self.roll.value.strip()
+        user_id = str(interaction.user.id)
 
         # Combine the user's Roll number and ID and encrypt it using the Fernet cipher
-        data = userRoll + "|" + userID
+        data = user_roll + "|" + user_id
         data = data.encode()
         enc = cipher.encrypt(data)
         # Check if the Roll number is valid
         # ignore the case of the Roll number and check if it matches the regex pattern using re.LOWERCASE
-        if re.fullmatch("[0-9][0-9][a-z]*[0-9]*", userRoll, re.IGNORECASE) and len(userRoll) in [10, 11]:
+        if re.fullmatch("[0-9][0-9][a-z]*[0-9]*", user_roll, re.IGNORECASE) and len(user_roll) in [10, 11]:
             # Assign the appropriate roles to the user based on their number of tries.
             dot_one = discord.utils.get(interaction.guild.roles, id=config.DOT_ONE_ROLE)
             if not dot_one:
@@ -93,11 +93,11 @@ class Verification(ui.Modal, title="Verfication Link"):
                 await interaction.user.add_roles(dot_one)
 
             # Send a verification email containing a unique verification link to the user's email address
-            send_email(interaction.user.name, userRoll, enc)
+            send_email(interaction.user.name, user_roll, enc)
 
             # Send a message to the user indicating that a verification link has been sent to their email address
             await interaction.response.send_message(
-                f"Please check your email inbox for a link that has been sent to your email address, {userRoll}@ds.study.iitm.ac.in.",
+                f"Please check your email inbox for a link that has been sent to your email address, {user_roll}@ds.study.iitm.ac.in.",
                 ephemeral=True,
             )
         else:
@@ -126,7 +126,7 @@ class Verification(ui.Modal, title="Verfication Link"):
         Called if there is an error while processing the user's submission.
         """
         await interaction.response.send_message(
-            "We apologize for the inconvenience. Please contact a moderator and inform them about the error you encountered so that we can fix it.",
+            f"We apologize for the inconvenience. Please contact a moderator and inform them about the error you encountered so that we can fix it: {error}",
             ephemeral=True,
         )
         return
