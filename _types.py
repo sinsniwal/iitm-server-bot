@@ -12,4 +12,5 @@ class Context(commands.Context[IITMBot]):
     """
     A :class:`commands.Context` belonging to an :class:`IITMBot`.
     """
+
     ...
