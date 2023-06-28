@@ -65,7 +65,7 @@ class Reaction(commands.Cog):
         if payload.emoji.name=='🇩':
             async with self._lock:
                 new_roles = {r.id for r in member.roles[1:]}
-                new_roles -= set(self.foundational_subject_roles)
+                new_roles -= self.foundational_subject_roles
                 new_roles.discard(self.foundational)  # Foundational
                 new_roles.add(self.foundational_alumni)  # Foundational Alumni
                 new_roles.add(self.diploma)
@@ -82,7 +82,7 @@ class Reaction(commands.Cog):
         elif payload.emoji.name=='🇧':
             async with self._lock:
                 new_roles = {r.id for r in member.roles[1:]}
-                new_roles -= set(self.foundational_subject_roles) + set(Reaction.diploma_subject_roles)
+                new_roles -= (self.foundational_subject_roles + self.diploma_subject_roles)
                 new_roles.discard(self.foundational)
                 new_roles.discard(self.diploma)
                 new_roles.add(self.foundational_alumni)
@@ -115,7 +115,7 @@ class Reaction(commands.Cog):
         if payload.emoji.name=='🇩':
             async with self._lock:
                 new_roles = {r.id for r in member.roles[1:]}
-                new_roles -= set(self.diploma_subject_roles)
+                new_roles -= self.diploma_subject_roles
                 new_roles.discard(self.diploma)
                 if self.bsc not in new_roles:
                     new_roles.discard(self.foundational_alumni)
