@@ -1,8 +1,7 @@
 [tool.poetry]
-name = "bot"
+name = "iitm server Bot"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "This is a Python-based Discord bot for the IIT Madras BS Students Discord server."
 license = "MIT"
 readme = "README.md"
 
