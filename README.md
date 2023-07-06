@@ -1,6 +1,6 @@
 # IITM-Server-Bot
 
-This project is a Server Discord bot that handles interactions, messages, reactions and Slash commands. It is built using Python and the Discord.py library.
+This project is a Server Discord bot that handles interactions, messages, reactions, and Slash commands. It is built using Python and the Discord.py library.
 
 
 ## Getting Started
@@ -8,9 +8,11 @@ This project is a Server Discord bot that handles interactions, messages, reacti
 To use this bot, you need to do the following:
 
 1. Clone this repository to your local machine.
-2. Modify the `config.ini` file with your settings.
-3. Install the required Python packages by running `pip install -r requirements.txt.`
-4. Run the `main.py` file to start the bot.
+2. Modify `config.py` with your settings.
+3. Add the required secrets to `.env.example`
+4. Rename `.env.example` to `.env`
+5. Install the required Python packages by running `pip install -r requirements.txt.`
+6. Run the `main.py` file to start the bot.
 
 
 ## Project Structure
@@ -37,6 +39,7 @@ The project is structured as follows:
 ├── bot.py
 ├── config.py
 ├── main.py
+├── .env
 └── requirements.txt
 ```
 
@@ -62,7 +65,10 @@ Contains the MIT License agreement for this project.
 This file which you are reading right now.
 
 ### `config.py`
-All _Non-Sensitive_ global config variables are set here for the bot. Sensitive variables are to be placed in a user-generated `.env`. File as follows
+All _Non-Sensitive_ global config variables are set here for the bot.
+
+### `.env`
+All _Sensitive_ variables such as discord tokens and other secrets.
 ````
 DISCORD_BOT_TOKEN="PASTE BOT TOKEN HERE"
 SIB_API_KEY="PASTE API KEY HERE"
@@ -105,4 +111,4 @@ This command will start the bot and be ready to receive messages and interaction
 
 If you have any questions or suggestions, please feel free to contact the repo owner at mohit.sinsniwal.dev@gmail.com
 
-Alternatively, you can contact other developers via [Discord (https://discord.gg/5j9cEyMH)](https://discord.gg/5j9cEyMH). Search for people with the `developer` role.
+Alternatively, you can contact other developers via the [Discord Server](https://discord.gg/iitm-bs-students-762774569827565569). Search for people with the `developer` role.
