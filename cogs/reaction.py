@@ -53,7 +53,7 @@ class Reaction(commands.Cog):
         React to a message with a specific emoji to assign or remove roles from a member.
         If the emoji is 🇩, remove all foundational subject roles from the member and add the roles "Foundational Alumni" and "Diploma".
         If the emoji is 🥋, add the role "Diploma" and the role "Foundational" if the member doesn't have it already.
-        If the emoji is 🇧, remove all foundational and diploma subject roles, "Foundational", and "Diploma" roles from the member and add the roles "Foundational Alumni", "Diploma Alumni", and "BSc".
+        If the emoji is 🇧, remove all foundational and diploma subject roles, "Foundational" and "Diploma" roles from the member and add the roles "Foundational Alumni", "Diploma Alumni", and "BSc".
         """
 
         if payload.guild_id is None:
@@ -100,10 +100,10 @@ class Reaction(commands.Cog):
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
         """
         If the emoji is 🇩 : remove all diploma subject roles and the roles "Diploma" from the member and give foundational role if he doesn't have "BSc" role,
-        -> if he has "BSc" role keep the "Foundational Alumni" and "Diploma Alumni" roles.
+        -> If he has "BSc" role, keep the "Foundational Alumni" and "Diploma Alumni" roles.
 
-        If the emoji is 🥋 : if they don't have "BSc" role, remove the roles "Diploma", "Foundational Alumni" from the member and add the role "Foundational".
-        -> if they have "BSc" role, keep the roles "Foundational Alumni" and "Diploma Alumni" and remove the roles "Diploma", "Foundational".
+        If the emoji is 🥋 : if they don't have "BSc" role, remove the roles "Diploma" and "Foundational Alumni" from the member and add the role "Foundational".
+        -> If they have "BSc" role, keep the roles "Foundational Alumni" and "Diploma Alumni" and remove the roles "Diploma", and "Foundational".
 
         If the emoji is 🇧, remove "Diploma Alumni" and "BSc" roles and give them "Foundational" role, if they don't have "Diploma Role".
         """
