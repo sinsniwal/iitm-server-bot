@@ -1,6 +1,6 @@
 # IITM-Server-Bot
 
-This project is a Server Discord bot that handles interactions, messages, reactions and Slash commands. It is built using Python and the Discord.py library.
+This project is a Server Discord bot that handles interactions, messages, reactions, and Slash commands. It is built using Python and the Discord.py library.
 
 
 ## Getting Started
@@ -111,4 +111,4 @@ This command will start the bot and be ready to receive messages and interaction
 
 If you have any questions or suggestions, please feel free to contact the repo owner at mohit.sinsniwal.dev@gmail.com
 
-Alternatively, you can contact other developers via the [Discord Server](https://discord.gg/5j9cEyMH). Search for people with the `developer` role.
+Alternatively, you can contact other developers via the [Discord Server](https://discord.gg/iitm-bs-students-762774569827565569). Search for people with the `developer` role.
