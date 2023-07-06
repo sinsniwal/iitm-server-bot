@@ -2,6 +2,8 @@
 name = "iitm server Bot"
 version = "0.1.0"
 description = "This is a Python-based Discord bot for the IIT Madras BS Students Discord server."
+# This is a required key, but a contributor list is maintained separately. Hence, empty
+authors = []
 license = "MIT"
 readme = "README.md"
 
