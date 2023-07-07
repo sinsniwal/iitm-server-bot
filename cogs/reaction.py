@@ -42,7 +42,7 @@ class Reaction(commands.Cog):
     foundational = 780875583214321684
     foundational_alumni = 780879103237947453
     bsc = 780878697862398002
-    
+
     def __init__(self, bot: IITMBot):
         self.bot = bot
         self._lock = asyncio.Lock()
@@ -75,7 +75,10 @@ class Reaction(commands.Cog):
                 new_roles.discard(self.foundational)  # Foundational
                 new_roles.add(self.foundational_alumni)  # Foundational Alumni
                 new_roles.add(self.diploma)
-                await member.edit(roles=[discord.Object(id=r) for r in new_roles], reason="level change")
+                await member.edit(
+                    roles=[discord.Object(id=r) for r in new_roles],
+                    reason="level change",
+                )
 
         elif payload.emoji.name == "🥋":
             async with self._lock:
@@ -83,18 +86,26 @@ class Reaction(commands.Cog):
                 new_roles.add(self.foundational)
                 new_roles.add(self.foundational_alumni)
                 new_roles.add(self.diploma)
-                await member.edit(roles=[discord.Object(id=r) for r in new_roles], reason="level change")
+                await member.edit(
+                    roles=[discord.Object(id=r) for r in new_roles],
+                    reason="level change",
+                )
         # extra
         elif payload.emoji.name == "🇧":
             async with self._lock:
                 new_roles = {r.id for r in member.roles[1:]}
-                new_roles -= self.foundational_subject_roles.union(self.diploma_subject_roles)
+                new_roles -= self.foundational_subject_roles.union(
+                    self.diploma_subject_roles
+                )
                 new_roles.discard(self.foundational)
                 new_roles.discard(self.diploma)
                 new_roles.add(self.foundational_alumni)
                 new_roles.add(self.diploma_alumni)
                 new_roles.add(self.bsc)
-                await member.edit(roles=[discord.Object(id=r) for r in new_roles], reason="level change")
+                await member.edit(
+                    roles=[discord.Object(id=r) for r in new_roles],
+                    reason="level change",
+                )
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
@@ -125,7 +136,10 @@ class Reaction(commands.Cog):
                 if self.bsc not in new_roles:
                     new_roles.discard(self.foundational_alumni)
                     new_roles.add(self.foundational)
-                await member.edit(roles=[discord.Object(id=r) for r in new_roles], reason="level change")
+                await member.edit(
+                    roles=[discord.Object(id=r) for r in new_roles],
+                    reason="level change",
+                )
 
         elif payload.emoji.name == "🥋":
             async with self._lock:
@@ -133,8 +147,13 @@ class Reaction(commands.Cog):
                 new_roles.discard(self.diploma)
                 if self.bsc not in new_roles:
                     new_roles.discard(self.foundational_alumni)
-                    new_roles.add(self.foundational) # Not adding else because member can be doing BSc and Foundational at same time
-                await member.edit(roles=[discord.Object(id=r) for r in new_roles], reason="level change")
+                    new_roles.add(
+                        self.foundational
+                    )  # Not adding else because member can be doing BSc and Foundational at same time
+                await member.edit(
+                    roles=[discord.Object(id=r) for r in new_roles],
+                    reason="level change",
+                )
 
         elif payload.emoji.name == "🇧":
             async with self._lock:
@@ -144,7 +163,10 @@ class Reaction(commands.Cog):
                 if self.diploma not in new_roles:
                     new_roles.add(self.foundational)
                     new_roles.discard(self.foundational_alumni)
-                await member.edit(roles=[discord.Object(id=r) for r in new_roles], reason="level change")
+                await member.edit(
+                    roles=[discord.Object(id=r) for r in new_roles],
+                    reason="level change",
+                )
 
 
 async def setup(bot: IITMBot):
