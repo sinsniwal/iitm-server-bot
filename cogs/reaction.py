@@ -88,7 +88,7 @@ class Reaction(commands.Cog):
         elif payload.emoji.name == "🇧":
             async with self._lock:
                 new_roles = {r.id for r in member.roles[1:]}
-                new_roles -= (self.foundational_subject_roles + self.diploma_subject_roles)
+                new_roles -= self.foundational_subject_roles.union(self.diploma_subject_roles)
                 new_roles.discard(self.foundational)
                 new_roles.discard(self.diploma)
                 new_roles.add(self.foundational_alumni)
