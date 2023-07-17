@@ -146,7 +146,7 @@ class Reaction(commands.Cog):
         elif payload.emoji.name == "🥋":
             async with self._lock:
                 new_roles = {r.id for r in member.roles[1:]}
-                new_roles.discard(self.diploma_subject_roles)
+                new_roles.difference_update(self.diploma_subject_roles)
                 new_roles.discard(self.diploma)
                 if self.bsc not in new_roles:
                     new_roles.discard(self.foundational_alumni)
