@@ -41,7 +41,6 @@ class Reaction(commands.Cog):
         1022159348874629151, # MAD-2 Project
         1022159458035580928, # MLP Project
     }
-
     diploma = 780875762277548093
     diploma_alumni = 780879376157376534
     foundational = 780875583214321684
@@ -147,7 +146,7 @@ class Reaction(commands.Cog):
         elif payload.emoji.name == "🥋":
             async with self._lock:
                 new_roles = {r.id for r in member.roles[1:]}
-                new_roles -= self.diploma_subject_roles
+                new_roles.discard(self.diploma_subject_roles)
                 new_roles.discard(self.diploma)
                 if self.bsc not in new_roles:
                     new_roles.discard(self.foundational_alumni)
