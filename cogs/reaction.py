@@ -36,10 +36,10 @@ class Reaction(commands.Cog):
         878371318205120512,  # MLP
         878371364745117697,  # BA
         878371417173925939,  # Tools in DS
-        1022158918237048832, # BDM Project
-        1022159156888739984, # MAD-1 Project
-        1022159348874629151, # MAD-2 Project
-        1022159458035580928, # MLP Project
+        1022158918237048832,  # BDM Project
+        1022159156888739984,  # MAD-1 Project
+        1022159348874629151,  # MAD-2 Project
+        1022159458035580928,  # MLP Project
     }
     diploma = 780875762277548093
     diploma_alumni = 780879376157376534
