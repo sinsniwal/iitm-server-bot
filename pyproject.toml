@@ -1,0 +1,56 @@
+[tool.poetry]
+name = "iitm server Bot"
+version = "0.1.0"
+description = "This is a Python-based Discord bot for the IIT Madras BS Students Discord server."
+# This is a required key, but a contributor list is maintained separately. Hence, empty
+authors = []
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+"discord.py" = {extras = ["speed"], version = "^2.3.0"}
+sib-api-v3-sdk = "^7.6.0"
+cryptography = "^41.0.1"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+isort = "^5.12.0"
+ipython = "^8.14.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+lines_after_imports = 2
+combine_star = true
+combine_as_imports = true
+
+[tool.pyright]
+pythonVersion = "3.10"
+useLibraryCodeForTypes = true
+typeCheckingMode = "basic"
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true
+strictTupleInference = true
+strictParameterNoneValue = true
+
+reportMissingImports = "error"
+reportUnusedImport = "error"
+reportUnusedClass = "error"
+reportUnusedFunction = "error"
+reportUnusedVariable = "error"
+reportDuplicateImport = "error"
+reportGeneralTypeIssues = "error"
+reportUntypedFunctionDecorator = "error"
+
+reportUnnecessaryTypeIgnoreComment = "warning"
+
