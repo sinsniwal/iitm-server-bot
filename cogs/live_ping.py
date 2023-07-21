@@ -2,7 +2,7 @@ import re
 import requests
 import logging
 import datetime
-
+import Paginator
 import discord
 from discord.ext import commands
 from discord.ext import tasks
@@ -250,18 +250,27 @@ class LivePinger(commands.Cog):
         if (len(self._pendingNotifications) == 0):
             await ctx.reply("No upcoming notifications")
             return
-        e = discord.Embed(
-            title="Upcoming Live Sessions",
-            color=discord.Colour.blurple()
-        )
-        for notification in self._pendingNotifications[0:5]:
-            e.add_field(
-                name=notification.event.name +
-                ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
-                inline=False,
-                value=f"<t:{round(notification.time.timestamp())}:R>"
+
+        #  partition _pendingNotifications into 5s
+        parts = [self._pendingNotifications[i:i + 5]
+                 for i in range(0, len(self._pendingNotifications), 5)]
+        embeds = []
+        for i in range(len(parts)):
+            e = discord.Embed(
+                title=f"Upcoming Notifications [{i+1}/{len(parts)}]",
+                color=discord.Colour.blurple()
             )
-        await ctx.reply(embed=e)
+            part = parts[i]
+            for notification in part:
+                e.add_field(
+                    name=notification.event.name +
+                    ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
+                    inline=False,
+                    value=f"<t:{round(notification.time.timestamp())}:R>"
+                )
+            embeds.append(e)
+        await Paginator.Simple(
+        ).start(ctx, embeds)
 
 
 async def setup(bot):
