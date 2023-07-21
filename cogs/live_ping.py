@@ -257,7 +257,7 @@ class LivePinger(commands.Cog):
         embeds = []
         for i in range(len(parts)):
             e = discord.Embed(
-                title=f"Upcoming Notifications [{i+1}/{len(parts)}]",
+                title=f"Upcoming Notifications",
                 color=discord.Colour.blurple()
             )
             part = parts[i]
