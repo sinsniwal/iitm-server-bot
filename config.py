@@ -1,3 +1,8 @@
+########################
+## RUNTIME VARIABLES ##
+########################
+ENVIRONMENT = "dev"  # "dev" or "prod"
+
 ####################################
 ## BOT CONFIGURATION VARIABLES ##
 ####################################
@@ -21,13 +26,32 @@ DOT_TWO_ROLE = 1078208892296761404
 DOT_THREE_ROLE = 1078208973326536724
 SPAM_ROLE = 1078208518793994240
 
-LIVE_SESSION_PING_ROLE = 1131210834744447067  # dev server
-
+LIVE_SESSION_PING_ROLE = None if ENVIRONMENT == "prod" else 1131210834744447067
 LIVE_SESSION_CALENDARS = [
     {
         "name": "English 1 - May 23",
         "id": "c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com",
         "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
-        "channel": 111
-    }
+        "channel": 780959983301820426 if ENVIRONMENT == "prod" else 1104485755637735458,
+    },
+    {
+        "name": "Maths 1 - May 23",
+        "id": "c_a9c3c9118e64ae5e1746d451d79ee9775cd2e7c6c9237f3c0bc8cd4504d37ded%40group.calendar.google.com",
+        "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
+        "channel": 780959307403100181 if ENVIRONMENT == "prod" else 1104485755637735462,
+    },
+    {
+        "name": "Stats 1 - May 23",
+        "id": "c_p84m18r1paj8ccjlhdvtkj9sbk%40group.calendar.google.com",
+        "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
+        "channel": 780959569769660416 if ENVIRONMENT == "prod" else 1104485755637735460,
+    },
+    {
+        "name": "CT - May 23",
+        "id": "c_4uohcdlrfqd010amaomm03luso%40group.calendar.google.com",
+        "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
+        "channel": 780959847234535464 if ENVIRONMENT == "prod" else 1104485755864240260,
+    },
 ]
+
+# Tutorial to find calendar id and key -> https://www.loom.com/share/bc7029baab024b14a6a54d5cd6ec92cc?sid=341e7d29-15d3-4cb4-9420-354d5ed8cacf
