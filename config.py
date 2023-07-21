@@ -22,3 +22,10 @@ DOT_THREE_ROLE = 1078208973326536724
 SPAM_ROLE = 1078208518793994240
 
 LIVE_SESSION_PING_ROLE = 1131210834744447067  # dev server
+CALENDARS = [
+    {
+        "name": "English 1 - May 23",
+        "id": "c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com",
+        "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
+    }
+]

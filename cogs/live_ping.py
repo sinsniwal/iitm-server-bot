@@ -12,57 +12,6 @@ import re
 DATE_FORMAT = "%d-%m-%Y %H:%M"
 REMINDER_BEFORE_N_MINUTES = 5
 
-class CalendarOptions():
-    def __init__(self,calendar_id: str, start: datetime.datetime, calendarKey: str):
-        self.calendar_id = calendar_id
-        self.start = start
-        self.key = key
-
-    def getUrlForDayEvents(self):
-        url = "https://clients6.google.com/calendar/v3/calendars/"+self.calendar_id+"events?"
-        url += "calendarId="+self.calendar_id
-        url += "&singleEvents=true"
-        url += "&timeZone=Asia%2FKolkata"
-        url += "&maxAttendees=1"
-        url += "&maxResults=250"
-        url += "&sanitizeHtml=true"	
-        url += "&"+convertToUrlSafe(self.start.isoformat()) # start
-        url += "&"+convertToUrlSafe((self.start + datetime.timedelta(days=1)).isoformat()) # end
-        url += "&key="+self.key
-                
- class Calendar():
-    def __init__(self,options: CalendarOptions):
-        self.options = options
-        self._url = options.getUrlForDayEvents()
-    
-    def getRawEvents(self) -> List(dict) | None:
-        try:
-            rawEvents = request.get(self._url).json()['itms']    
-            return rawEvents
-        except:
-            return None
-    
-    def getEvents(self) -> List(Event) | None:
-        try:
-            rawEvents = getRawEvents()
-            events = [Event(rawEvent) for rawEvent in rawEvents]
-            return events
-        except:
-            return None                                                     
-		
-# url = "https://clients6.google.com/calendar/v3/calendars/c_rviuu7v55mu79mq0im1smptg3o@group.calendar.google.com/events?"
-# url += "calendarId=c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com"
-# url += "&singleEvents=true"
-# url += "&timeZone=Asia%2FKolkata"
-# url += "&maxAttendees=1"
-# url += "&maxResults=250"
-# url += "&sanitizeHtml=true"
-# url += "&timeMin=2023-07-19T00%3A00%3A00%2B05%3A30"
-# url += "&timeMax=2023-08-31T00%3A00%3A00%2B05%3A30"
-# url += "&key=AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
-
-
-
 
 class Event():
     def __init__(self, event: dict) -> None:
@@ -126,6 +75,7 @@ class Notification():
         self.event = event
         self.channelId = channelId
         self.time = time
+        self.type = type
 
     async def send(self, bot):
         channel = bot.get_channel(self.channelId)
@@ -134,6 +84,63 @@ class Notification():
         else:
             e = self.event.generateEmbed()
         await channel.send(f'<@&{LIVE_SESSION_PING_ROLE}>', embed=e)
+
+
+class CalendarOptions():
+    def __init__(self, calendar_id: str, start: datetime.datetime, calendarKey: str):
+        self.calendar_id = calendar_id
+        self.start = start
+        self.key = calendarKey
+
+    def getUrlForDayEvents(self) -> str:
+        url = "https://clients6.google.com/calendar/v3/calendars/"+self.calendar_id+"/events?"
+        url += "calendarId="+self.calendar_id
+        url += "&singleEvents=true"
+        url += "&timeZone=Asia%2FKolkata"
+        url += "&maxAttendees=1"
+        url += "&maxResults=250"
+        url += "&sanitizeHtml=true"
+        url += "&timeMin=" + \
+            convertToUrlSafe(addISTtoISO(self.start.isoformat()))  # start
+        url += "&timeMax=" + \
+            convertToUrlSafe(
+                addISTtoISO((self.start + datetime.timedelta(weeks=30)).isoformat()))  # end
+        url += "&key="+self.key
+        return url
+
+
+class Calendar():
+    def __init__(self, options: CalendarOptions):
+        self.options = options
+        self._url = options.getUrlForDayEvents()
+
+    def getRawEvents(self) -> list | None:
+        try:
+            rawEvents = requests.get(self._url).json()['items']
+            return rawEvents
+        except:
+            return None
+
+    def getEvents(self) -> List[Event] | None:
+        try:
+            rawEvents = self.getRawEvents()
+            if (rawEvents is None):
+                return None
+            events = [Event(rawEvent) for rawEvent in rawEvents]
+            return events
+        except:
+            return None
+
+# url = "https://clients6.google.com/calendar/v3/calendars/c_rviuu7v55mu79mq0im1smptg3o@group.calendar.google.com/events?"
+# url += "calendarId=c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com"
+# url += "&singleEvents=true"
+# url += "&timeZone=Asia%2FKolkata"
+# url += "&maxAttendees=1"
+# url += "&maxResults=250"
+# url += "&sanitizeHtml=true"
+# url += "&timeMin=2023-07-19T00%3A00%3A00%2B05%3A30"
+# url += "&timeMax=2023-08-31T00%3A00%3A00%2B05%3A30"
+# url += "&key=AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
 
 
 class LivePinger(commands.Cog):
@@ -154,15 +161,23 @@ class LivePinger(commands.Cog):
     async def refreshSchedule(self):
         self.logger.info("Updating Schedule List")
         try:
-
-            retrievedData = []  # placeholder for now
+            opts = CalendarOptions(
+                calendar_id="c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com",
+                start=datetime.datetime.now(),
+                calendarKey="AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
+            )
+            cal = Calendar(opts)
+            retrievedData = cal.getRawEvents()
+            if retrievedData is None:
+                self.logger.error("Empty Schedule List")
+                return
+            # placeholder for now
             if (len(retrievedData) != 0):
                 self.logger.info(
                     "Got "+str(len(retrievedData))+" Live Sessions")
                 self._events.clear()
-                self._events = [Event({
-                    # event['summary'],
-                }) for event in retrievedData if isEligible(event)]
+                self._events = [Event(event)
+                                for event in retrievedData if isEligible(event)]
 
                 for e in self._events:
                     reminder = e.start - \
@@ -171,7 +186,7 @@ class LivePinger(commands.Cog):
                         e, 1104485755637735456, reminder, "reminder"))  # need to change channel id to be dynamic
                     self._pendingNotifications.append(Notification(
                         e, 1104485755637735456, e.start, "default"))  # need to change channel id to be dynamic
-
+                self._events.sort(key=lambda e: e.start)
             self.logger.info("Updated Schedule List")
         except Exception as e:
             self.logger.error("Failed to update Schedule List")
@@ -224,6 +239,24 @@ class LivePinger(commands.Cog):
             }), ctx.channel.id, datetime.datetime.now() + datetime.timedelta(minutes=1)
         ))
 
+    @commands.command()
+    async def coming_up(self, ctx):
+        if (len(self._pendingNotifications) == 0):
+            await ctx.reply("No upcoming notifications")
+            return
+        e = discord.Embed(
+            title="Upcoming Live Sessions",
+            color=discord.Colour.blurple()
+        )
+        for notification in self._pendingNotifications[0:5]:
+            e.add_field(
+                name=notification.event.name +
+                ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
+                inline=False,
+                value=f"<t:{round(notification.time.timestamp())}:R>"
+            )
+        await ctx.reply(embed=e)
+
 
 async def setup(bot):
     await bot.add_cog(LivePinger(bot))
@@ -254,6 +287,7 @@ def extractGoogleMeetLinks(text: str):
 
     return re.findall(r"(https?://meet\.google\.com/[a-zA-Z0-9_-]+)", text)
 
+
 def convertToUrlSafe(url: str):
     conversionTable = {
         "/": "%2F",
@@ -261,7 +295,13 @@ def convertToUrlSafe(url: str):
         "+": "%2B",
         "-": "%2D"
     }
-    for character,replacement in conversionTable.items():
-        url = url.replace(character,replacement)
-    
+    for character, replacement in conversionTable.items():
+        url = url.replace(character, replacement)
+
     return url
+
+
+def addISTtoISO(iso: str):
+    if (not iso.endswith('+05:30')):
+        iso += '+05:30'
+    return iso
