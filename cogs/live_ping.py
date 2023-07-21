@@ -17,10 +17,10 @@ REMINDER_BEFORE_N_MINUTES = 5
 
 class Event():
     def __init__(self, event: dict) -> None:
-        self.name: str = event['summary']
-        self.desc: str = event['description']
+        self.name: str = event.get('summary', 'No Name')
+        self.desc: str = event.get('description', 'No Description')
         self.meet_links: List[str] | None = extractGoogleMeetLinks(
-            event['description'])
+            self.desc)
         self.start: datetime.datetime = datetime.datetime.fromisoformat(
             event['start']['dateTime'])
         self.end: datetime.datetime = datetime.datetime.fromisoformat(
@@ -73,11 +73,12 @@ class Event():
 
 
 class Notification():
-    def __init__(self, event: Event, channelId: int, time: datetime.datetime, type: str = "default") -> None:
+    def __init__(self, event: Event, channelId: int, time: datetime.datetime, nType: str = "default", calendarName: str = "unknown calendar") -> None:
         self.event = event
         self.channelId = channelId
         self.time = time
-        self.type = type
+        self.type = nType
+        self.calendarName = calendarName
 
     async def send(self, bot):
         channel = bot.get_channel(self.channelId)
@@ -162,39 +163,36 @@ class LivePinger(commands.Cog):
     @tasks.loop(hours=6)
     async def refreshSchedule(self):
         self.logger.info("Updating Schedule List")
-        try:
-            for calendar in LIVE_SESSION_CALENDARS:
-                opts = CalendarOptions(
-                    calendar_id=str(calendar['id']),
-                    start=datetime.datetime.now(),
-                    calendarKey=str(calendar['key'])
-                )
-                cal = Calendar(opts)
-                retrievedData = cal.getRawEvents()
-                if retrievedData is None:
-                    self.logger.error("Empty Schedule List")
-                    return
-                if (len(retrievedData) != 0):
-                    self.logger.info(
-                        "Got "+str(len(retrievedData))+" Live Sessions")
-                    self._events.clear()
-                    self._events = (events := [Event(event)
-                                    for event in retrievedData if isEligible(event)])
 
-                    for e in events:
-                        reminder = e.start - datetime.timedelta(
-                            minutes=REMINDER_BEFORE_N_MINUTES)
-                        self._pendingNotifications.append(Notification(
-                            e, int(calendar['channel']), reminder, "reminder"))  # need to change channel id to be dynamic
-                        self._pendingNotifications.append(Notification(
-                            e, int(calendar['channel']), e.start, "default"))
-                        # need to change channel id to be dynamic
-                    self._events.sort(key=lambda e: e.start)
-                self.logger.info("Updated Schedule List")
+        for calendar in LIVE_SESSION_CALENDARS:
+            opts = CalendarOptions(
+                calendar_id=str(calendar['id']),
+                start=datetime.datetime.now(),
+                calendarKey=str(calendar['key'])
+            )
+            cal = Calendar(opts)
+            retrievedData = cal.getRawEvents()
+            if retrievedData is None:
+                self.logger.error("Empty Schedule List")
+                return
+            if (len(retrievedData) != 0):
+                self.logger.info(
+                    "Got "+str(len(retrievedData))+" Live Sessions")
+                self._events.clear()
+                self._events = (events := [Event(event)
+                                for event in retrievedData if isEligible(event)])
 
-        except Exception as e:
-            self.logger.error("Failed to update Schedule List")
-            self.logger.error(e)
+                for e in events:
+                    reminder = e.start - datetime.timedelta(
+                        minutes=REMINDER_BEFORE_N_MINUTES)
+                    self._pendingNotifications.append(Notification(e, int(calendar['channel']), reminder, "reminder", calendarName=str(
+                        calendar['name'])))  # need to change channel id to be dynamic
+                    self._pendingNotifications.append(Notification(
+                        e, int(calendar['channel']), e.start, "default", str(calendar['name'])))
+                    # need to change channel id to be dynamic
+                self._events.sort(key=lambda e: e.start)
+                self._pendingNotifications.sort(key=lambda n: n.time)
+            self.logger.info("Updated Schedule List")
 
     @tasks.loop(minutes=1)
     async def runNotifications(self):
@@ -263,10 +261,10 @@ class LivePinger(commands.Cog):
             part = parts[i]
             for notification in part:
                 e.add_field(
-                    name=notification.event.name +
-                    ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
+                    name=notification.event.name + " - `" + notification.calendarName+'`',
                     inline=False,
-                    value=f"<t:{round(notification.time.timestamp())}:R>"
+                    value=f"<t:{round(notification.time.timestamp())}:R> " +
+                    ("`RMND`" if notification.type == "reminder" else "`EVNT`")
                 )
             embeds.append(e)
         await Paginator.Simple(
