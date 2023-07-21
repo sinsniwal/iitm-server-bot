@@ -3,6 +3,7 @@ import discord
 import logging
 import datetime
 from discord.ext import tasks
+import requests
 from config import LIVE_SESSION_PING_ROLE
 from typing import List
 import re
@@ -10,6 +11,57 @@ import re
 
 DATE_FORMAT = "%d-%m-%Y %H:%M"
 REMINDER_BEFORE_N_MINUTES = 5
+
+class CalendarOptions():
+    def __init__(self,calendar_id: str, start: datetime.datetime, calendarKey: str):
+        self.calendar_id = calendar_id
+        self.start = start
+        self.key = key
+
+    def getUrlForDayEvents(self):
+        url = "https://clients6.google.com/calendar/v3/calendars/"+self.calendar_id+"events?"
+        url += "calendarId="+self.calendar_id
+        url += "&singleEvents=true"
+        url += "&timeZone=Asia%2FKolkata"
+        url += "&maxAttendees=1"
+        url += "&maxResults=250"
+        url += "&sanitizeHtml=true"	
+        url += "&"+convertToUrlSafe(self.start.isoformat()) # start
+        url += "&"+convertToUrlSafe((self.start + datetime.timedelta(days=1)).isoformat()) # end
+        url += "&key="+self.key
+                
+ class Calendar():
+    def __init__(self,options: CalendarOptions):
+        self.options = options
+        self._url = options.getUrlForDayEvents()
+    
+    def getRawEvents(self) -> List(dict) | None:
+        try:
+            rawEvents = request.get(self._url).json()['itms']    
+            return rawEvents
+        except:
+            return None
+    
+    def getEvents(self) -> List(Event) | None:
+        try:
+            rawEvents = getRawEvents()
+            events = [Event(rawEvent) for rawEvent in rawEvents]
+            return events
+        except:
+            return None                                                     
+		
+# url = "https://clients6.google.com/calendar/v3/calendars/c_rviuu7v55mu79mq0im1smptg3o@group.calendar.google.com/events?"
+# url += "calendarId=c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com"
+# url += "&singleEvents=true"
+# url += "&timeZone=Asia%2FKolkata"
+# url += "&maxAttendees=1"
+# url += "&maxResults=250"
+# url += "&sanitizeHtml=true"
+# url += "&timeMin=2023-07-19T00%3A00%3A00%2B05%3A30"
+# url += "&timeMax=2023-08-31T00%3A00%3A00%2B05%3A30"
+# url += "&key=AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
+
+
 
 
 class Event():
@@ -201,3 +253,15 @@ def extractGoogleMeetLinks(text: str):
         return None
 
     return re.findall(r"(https?://meet\.google\.com/[a-zA-Z0-9_-]+)", text)
+
+def convertToUrlSafe(url: str):
+    conversionTable = {
+        "/": "%2F",
+        ":": "%3A",
+        "+": "%2B",
+        "-": "%2D"
+    }
+    for character,replacement in conversionTable.items():
+        url = url.replace(character,replacement)
+    
+    return url
