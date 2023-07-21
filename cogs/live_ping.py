@@ -245,20 +245,21 @@ class LivePinger(commands.Cog):
 
     @commands.command()
     async def coming_up(self, ctx):
-        if(ctx.message.author.id != 625907860861091856) ctx.reply('you are not allowed to use this command :(')
-        if (len(self._pendingNotifications) == 0): 
+        if (ctx.message.author.id != 625907860861091856):
+            ctx.reply('you are not allowed to use this command :(')
+        if (len(self._pendingNotifications) == 0):
             await ctx.reply("No upcoming notifications")
             return
         e = discord.Embed(
-             title="Upcoming Live Sessions",
-             color=discord.Colour.blurple()
+            title="Upcoming Live Sessions",
+            color=discord.Colour.blurple()
         )
         for notification in self._pendingNotifications[0:5]:
             e.add_field(
-                 name=notification.event.name +
-                 ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
-                 inline=False,
-                 value=f"<t:{round(notification.time.timestamp())}:R>"
+                name=notification.event.name +
+                ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
+                inline=False,
+                value=f"<t:{round(notification.time.timestamp())}:R>"
             )
         await ctx.reply(embed=e)
 
