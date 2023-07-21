@@ -42,7 +42,7 @@ class Event():
         e.add_field(
             name="Meeting Link",
             inline=False,
-            value='`No Meeting Link`' if self.meet_links is None else self.meet_links[0]
+            value='`No Meeting Link`' if (self.meet_links is None or len(self.meet_links) == 0) else self.meet_links[0]
         )
 
         e.set_thumbnail(
@@ -64,7 +64,7 @@ class Event():
         e.add_field(
             name="Meeting Link",
             inline=False,
-            value='`No Meeting Link`' if self.meet_links is None else self.meet_links[0]
+            value='`No Meeting Link`' if (self.meet_links is None or len(self.meet_links) == 0) else self.meet_links[0]
         )
 
         e.set_thumbnail(
