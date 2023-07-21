@@ -1,12 +1,14 @@
-from discord.ext import commands
-import discord
+import re
+import requests
 import logging
 import datetime
+
+import discord
+from discord.ext import commands
 from discord.ext import tasks
-import requests
-from config import LIVE_SESSION_PING_ROLE
 from typing import List
-import re
+
+from config import LIVE_SESSION_PING_ROLE, LIVE_SESSION_CALENDARS
 
 
 DATE_FORMAT = "%d-%m-%Y %H:%M"
@@ -161,33 +163,35 @@ class LivePinger(commands.Cog):
     async def refreshSchedule(self):
         self.logger.info("Updating Schedule List")
         try:
-            opts = CalendarOptions(
-                calendar_id="c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com",
-                start=datetime.datetime.now(),
-                calendarKey="AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
-            )
-            cal = Calendar(opts)
-            retrievedData = cal.getRawEvents()
-            if retrievedData is None:
-                self.logger.error("Empty Schedule List")
-                return
-            # placeholder for now
-            if (len(retrievedData) != 0):
-                self.logger.info(
-                    "Got "+str(len(retrievedData))+" Live Sessions")
-                self._events.clear()
-                self._events = [Event(event)
-                                for event in retrievedData if isEligible(event)]
+            for calendar in LIVE_SESSION_CALENDARS:
+                opts = CalendarOptions(
+                    calendar_id=str(calendar['id']),
+                    start=datetime.datetime.now(),
+                    calendarKey=str(calendar['key'])
+                )
+                cal = Calendar(opts)
+                retrievedData = cal.getRawEvents()
+                if retrievedData is None:
+                    self.logger.error("Empty Schedule List")
+                    return
+                if (len(retrievedData) != 0):
+                    self.logger.info(
+                        "Got "+str(len(retrievedData))+" Live Sessions")
+                    self._events.clear()
+                    self._events = (events := [Event(event)
+                                    for event in retrievedData if isEligible(event)])
 
-                for e in self._events:
-                    reminder = e.start - \
-                        datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES)
-                    self._pendingNotifications.append(Notification(
-                        e, 1104485755637735456, reminder, "reminder"))  # need to change channel id to be dynamic
-                    self._pendingNotifications.append(Notification(
-                        e, 1104485755637735456, e.start, "default"))  # need to change channel id to be dynamic
-                self._events.sort(key=lambda e: e.start)
-            self.logger.info("Updated Schedule List")
+                    for e in events:
+                        reminder = e.start - datetime.timedelta(
+                            minutes=REMINDER_BEFORE_N_MINUTES)
+                        self._pendingNotifications.append(Notification(
+                            e, int(calendar['channel']), reminder, "reminder"))  # need to change channel id to be dynamic
+                        self._pendingNotifications.append(Notification(
+                            e, int(calendar['channel']), e.start, "default"))
+                        # need to change channel id to be dynamic
+                    self._events.sort(key=lambda e: e.start)
+                self.logger.info("Updated Schedule List")
+
         except Exception as e:
             self.logger.error("Failed to update Schedule List")
             self.logger.error(e)
@@ -239,23 +243,23 @@ class LivePinger(commands.Cog):
             }), ctx.channel.id, datetime.datetime.now() + datetime.timedelta(minutes=1)
         ))
 
-    @commands.command()
-    async def coming_up(self, ctx):
-        if (len(self._pendingNotifications) == 0):
-            await ctx.reply("No upcoming notifications")
-            return
-        e = discord.Embed(
-            title="Upcoming Live Sessions",
-            color=discord.Colour.blurple()
-        )
-        for notification in self._pendingNotifications[0:5]:
-            e.add_field(
-                name=notification.event.name +
-                ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
-                inline=False,
-                value=f"<t:{round(notification.time.timestamp())}:R>"
-            )
-        await ctx.reply(embed=e)
+    # @commands.command()
+    # async def coming_up(self, ctx):
+    #     if (len(self._pendingNotifications) == 0):
+    #         await ctx.reply("No upcoming notifications")
+    #         return
+    #     e = discord.Embed(
+    #         title="Upcoming Live Sessions",
+    #         color=discord.Colour.blurple()
+    #     )
+    #     for notification in self._pendingNotifications[0:5]:
+    #         e.add_field(
+    #             name=notification.event.name +
+    #             ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
+    #             inline=False,
+    #             value=f"<t:{round(notification.time.timestamp())}:R>"
+    #         )
+    #     await ctx.reply(embed=e)
 
 
 async def setup(bot):
