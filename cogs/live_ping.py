@@ -184,11 +184,11 @@ class LivePinger(commands.Cog):
 
                 for e in events:
                     reminder = e.start - datetime.timedelta(
-                        minutes=REMINDER_BEFORE_N_MINUTES)
+                        minutes=REMINDER_BEFORE_N_MINUTES) - datetime.timedelta(hours=5) - datetime.timedelta(minutes=5)
                     self._pendingNotifications.append(Notification(e, int(calendar['channel']), reminder, "reminder", calendarName=str(
                         calendar['name'])))  # need to change channel id to be dynamic
                     self._pendingNotifications.append(Notification(
-                        e, int(calendar['channel']), e.start, "default", str(calendar['name'])))
+                        e, int(calendar['channel']), (e.start - datetime.timedelta(hours=5) - datetime.timedelta(minutes=30)), "default", str(calendar['name'])))
                     # need to change channel id to be dynamic
                 self._events.sort(key=lambda e: e.start)
                 self._pendingNotifications.sort(key=lambda n: n.time)
