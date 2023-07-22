@@ -5,6 +5,7 @@ import datetime
 import logging
 import re
 from typing import TYPE_CHECKING, Literal, TypedDict
+from urllib.parse import quote_plus
 
 import aiohttp
 import discord
@@ -122,20 +123,23 @@ class CalendarOptions:
 
     @property
     def url(self) -> yarl.URL:
-        url = yarl.URL("https://clients6.google.com/calendar/v3/calendars") / self.calendar_id / "events"
+        return yarl.URL(
+            f"https://clients6.google.com/calendar/v3/calendars/{self.calendar_id}/events?{self.params}", encoded=True
+        )
+
+    @property
+    def params(self) -> str:
         params = {
-            "calendarId": self.calendar_id,
             "singleEvents": "true",
-            "timeZone": "Asia/Kolkata",
+            "timeZone": "Asia%2FKolkata",
             "maxAttendees": "1",
             "maxResults": "250",
             "sanitizeHtml": "true",
-            "timeMin": self.start.isoformat(),
-            "timeMax": (self.start + datetime.timedelta(weeks=30)).isoformat(),
+            "timeMin": quote_plus(self.start.isoformat() + "Z"),
+            "timeMax": quote_plus((self.start + datetime.timedelta(weeks=30)).isoformat() + "Z"),
             "key": self.key,
         }
-        url = url.update_query(params)
-        return url
+        return "&".join(f"{k}={v}" for k, v in params.items())
 
 
 class Calendar:
@@ -145,9 +149,11 @@ class Calendar:
         self._session = session
 
     async def get_raw_events(self) -> list[EventPayload] | None:
+        log.info("params = %s", self.options.params)
         async with self._session.get(self._url) as resp:
             log.info("%s %s: %s -> %s", resp.method, resp.url, resp.status, resp.reason)
             if resp.status != 200:
+                log.error(await resp.text())
                 return None
             data = await resp.json()
             log.info("data: %s", data)
