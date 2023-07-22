@@ -108,7 +108,8 @@ class Notification:
 
     async def send(self, bot: IITMBot):
         channel: discord.TextChannel = bot.get_channel(self.channel_id)  # type: ignore # this is known.
-        if type == "reminder":
+        log.info("chanenel: %s", channel)
+        if self.type == "reminder":
             e = self.event.reminder_embed
         else:
             e = self.event.embed
@@ -149,14 +150,12 @@ class Calendar:
         self._session = session
 
     async def get_raw_events(self) -> list[EventPayload] | None:
-        log.info("params = %s", self.options.params)
         async with self._session.get(self._url) as resp:
             log.info("%s %s: %s -> %s", resp.method, resp.url, resp.status, resp.reason)
             if resp.status != 200:
                 log.error(await resp.text())
                 return None
             data = await resp.json()
-            log.info("data: %s", data)
             return data.get("items", None)
 
     def parse_events(self, evs: list[EventPayload]) -> list[Event]:
@@ -184,6 +183,7 @@ class LivePinger(commands.Cog):
         self._events: list[Event] = []
         self._pending_notifications: list[Notification] = []
         self._have_data = asyncio.Event()
+        self._fetched = asyncio.Event()
         # should be fine, since this is loaded in an async main.
         self._task: asyncio.Task[None] | None = None
         self._current_notification: Notification | None = None
@@ -198,7 +198,7 @@ class LivePinger(commands.Cog):
     @tasks.loop(hours=6)
     async def refresh_schedule(self):
         log.info("Updating Schedule List")
-
+        self._fetched.clear()
         for calendar in LIVE_SESSION_CALENDARS:
             opts = CalendarOptions(
                 calendar_id=str(calendar["id"]), start=datetime.datetime.now(), calendar_key=str(calendar["key"])
@@ -227,18 +227,22 @@ class LivePinger(commands.Cog):
                     self._events.sort(key=lambda e: e.start)
                     self._pending_notifications.sort(key=lambda n: n.time)
             log.info("Updated Schedule List")
+        self._fetched.set()
 
     async def get_next_event(self) -> Notification | None:
         log.info("Checking for notifications to send")
         now = discord.utils.utcnow()
+        await self._fetched.wait()
         try:
             notification = next(
                 notification
                 for notification in self._pending_notifications
-                if notification.time <= (now + datetime.timedelta(minutes=1))
+                if notification.time.astimezone() >= (now + datetime.timedelta(minutes=1))
             )
         except StopIteration:
+            log.error("No notifications to send??????")
             return
+        log.info("Found notification to send: %s", notification.event.name)
         return notification
 
     async def wait_for_next_event(self) -> Notification:
@@ -261,6 +265,7 @@ class LivePinger(commands.Cog):
     async def dispatch_notifications(self) -> None:
         try:
             while not self.bot.is_closed():
+                log.info("Waiting for next event")
                 notification = self._current_notification = await self.wait_for_next_event()
                 now = discord.utils.utcnow()
                 a_minute_ago = now - datetime.timedelta(minutes=1)
