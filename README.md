@@ -26,7 +26,7 @@ To use this bot, you need to do the following:
 ### Commonly used poetry commands
 - **Adding Dependency** `poetry add <package_name>`
 - **Adding Dev Dependency** `poetry add <package_name> --group dev`
-- **Updating Requirements File** `poetry export --without-hashes -o requirements.txt`
+- **Updating Requirements File** `poetry export --without-hashes --only main -o requirements.txt`
 - **Updating Dev Requirements File** `poetry export --without-hashes -o dev-requirements.txt --with dev`
 
 ## Project Structure
