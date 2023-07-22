@@ -102,7 +102,7 @@ class Notification:
     ) -> None:
         self.event = event
         self.channel_id = channel_id
-        self.time = time
+        self.time = time.astimezone()
         self.type = n_type
         self.calendar_name = calendar_name
 
@@ -113,6 +113,10 @@ class Notification:
             e = self.event.reminder_embed
         else:
             e = self.event.embed
+        e.set_footer(
+            text=self.calendar_name,
+            icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png",
+        )
         await channel.send(f"<@&{LIVE_SESSION_PING_ROLE}>", embed=e)
 
 
@@ -237,7 +241,7 @@ class LivePinger(commands.Cog):
             notification = next(
                 notification
                 for notification in self._pending_notifications
-                if notification.time.astimezone() >= (now + datetime.timedelta(minutes=1))
+                if notification.time >= now and notification is not self._current_notification
             )
         except StopIteration:
             log.error("No notifications to send??????")
@@ -258,6 +262,7 @@ class LivePinger(commands.Cog):
         return notification
 
     async def call_event(self, notification: Notification) -> None:
+        log.info('sending notification "%s"', notification.event.name)
         async with self._lock:
             self._pending_notifications.remove(notification)
         await notification.send(self.bot)
@@ -268,9 +273,9 @@ class LivePinger(commands.Cog):
                 log.info("Waiting for next event")
                 notification = self._current_notification = await self.wait_for_next_event()
                 now = discord.utils.utcnow()
-                a_minute_ago = now - datetime.timedelta(minutes=1)
-                if notification.time >= a_minute_ago:
-                    to_sleep = (notification.time - a_minute_ago).total_seconds()
+                if notification.time > now:
+                    log.info('sleeping until "%s"', notification.time)
+                    to_sleep = (notification.time - now).total_seconds()
                     await asyncio.sleep(to_sleep)
                 await self.call_event(notification)
         except asyncio.CancelledError:
@@ -290,7 +295,8 @@ class LivePinger(commands.Cog):
     async def test_pipeline(self, ctx):
         await ctx.reply("Scheduling notification for 1 minute from now")
         # this doesn't need a lock? i think?
-        self._pending_notifications.append(
+        self._pending_notifications.insert(
+            0,
             Notification(
                 Event(
                     {
@@ -310,8 +316,12 @@ class LivePinger(commands.Cog):
                 ),
                 ctx.channel.id,
                 datetime.datetime.now() + datetime.timedelta(minutes=1),
-            )
+            ),
         )
+        # restart the task
+        if self._task:
+            self._task.cancel()
+        self._task = self.bot.loop.create_task(self.dispatch_notifications())
 
     @commands.command()
     async def coming_up(self, ctx):
