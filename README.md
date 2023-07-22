@@ -24,11 +24,10 @@ To use this bot, you need to do the following:
 7. Run the `main.py` file to start the bot.
 
 ### Commonly used poetry commands
-- **Adding Dependencies**
-`poetry add <package_name>`
-- **Updating requirements files**
-`poetry export --without-hashes -o requirements.txt`
-`poetrt export --without-hashes -o dev-requirements.txt --with dev`
+- **Adding Dependency** `poetry add <package_name>`
+- **Adding Dev Dependency** `poetry add <package_name> --group dev`
+- **Updating Requirements File** `poetry export --without-hashes -o requirements.txt`
+- **Updating Dev Requirements File** `poetry export --without-hashes -o dev-requirements.txt --with dev`
 
 ## Project Structure
 
