@@ -19,15 +19,19 @@ To use this bot, you need to do the following:
 2. Modify `config.py` with your settings.
 3. Add the required secrets to `.env.example`
 4. Rename `.env.example` to `.env`
-5. Install `poetry` using `pip install poetry`
+5. Install `poetry` using [official instructions](https://python-poetry.org/docs/#installing-with-the-official-installer)
 6. Install the required python packages by running `poetry install`
-7. Run the `main.py` file to start the bot.
+7. Install `pyright` using [official instructions](https://microsoft.github.io/pyright/#/installation)
+8. Run the `main.py` file to start the bot.
 
-### Commonly used poetry commands
+### Commonly used development commands
 - **Adding Dependency** `poetry add <package_name>`
 - **Adding Dev Dependency** `poetry add <package_name> --group dev`
 - **Updating Requirements File** `poetry export --without-hashes --only main -o requirements.txt`
 - **Updating Dev Requirements File** `poetry export --without-hashes -o dev-requirements.txt --only dev`
+- **Sorting Imports** `isort .`
+- **Formatting Code** `black .`
+> Make sure to sort imports and format code before commits so workflow passes
 
 ## Project Structure
 
