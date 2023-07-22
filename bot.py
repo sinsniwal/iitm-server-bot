@@ -124,10 +124,17 @@ class IITMBot(commands.AutoShardedBot):
                     await self.load_extension(f"cogs.{filename[:-3]}")
                     logger.info(f"Loaded cogs.{filename[:-3]}")
                 except Exception as e:
-                    logger.error(f"cogs.{filename[:-3]} failed to load: {e}")
+                    logger.exception(f"cogs.{filename[:-3]} failed to load: {e}", exc_info=e)
+
+    async def setup_hook(self) -> None:
+        await self.load_extensions()
 
     async def on_ready(self):
         logger.info("Logged in as")
         logger.info(f"\tUser: {self.user.name}")
         logger.info(f"\tID  : {self.user.id}")
         logger.info("------")
+
+    async def close(self) -> None:
+        await super().close()
+        await self.session.close()

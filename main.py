@@ -13,7 +13,6 @@ async def main():
         logger = logging.getLogger("Startbot")
         dotenv.load_dotenv()
         bot = IITMBot._use_default(session=aiohttp.ClientSession())
-        await bot.load_extensions()
         logger.info("Loaded instructions")
         token = os.environ["DISCORD_BOT_TOKEN"]
         async with bot:
