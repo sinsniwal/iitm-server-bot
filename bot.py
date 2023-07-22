@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from logging.handlers import TimedRotatingFileHandler
 from traceback import TracebackException
 
+import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -93,9 +94,10 @@ class IITMBot(commands.AutoShardedBot):
     """
 
     user: discord.ClientUser
+    session: aiohttp.ClientSession
 
     @classmethod
-    def _use_default(cls):
+    def _use_default(cls, *, session: aiohttp.ClientSession):
         """
         Create an instance of IITMBot with base configuration
         """
@@ -111,6 +113,7 @@ class IITMBot(commands.AutoShardedBot):
             help_command=None,
             tree_cls=BotTree,
         )
+        x.session = session
         return x
 
     async def load_extensions(self):

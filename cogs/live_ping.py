@@ -1,60 +1,82 @@
+from __future__ import annotations
+
+import asyncio
 import datetime
 import logging
 import re
-from typing import List
+from typing import TYPE_CHECKING, Literal, TypedDict
 
+import aiohttp
 import discord
 import Paginator
-import requests
+import yarl
 from discord.ext import commands, tasks
 
 from config import LIVE_SESSION_CALENDARS, LIVE_SESSION_PING_ROLE
+from utils.formats import plural
+
+
+if TYPE_CHECKING:
+    from typing_extensions import NotRequired
+
+    from bot import IITMBot
 
 
 DATE_FORMAT = "%d-%m-%Y %H:%M"
 REMINDER_BEFORE_N_MINUTES = 5
+MEET_LINK_REGEX = re.compile(r"(https?://meet\.google\.com/[a-zA-Z0-9_-]+)")
+
+log = logging.getLogger(__name__)
+
+
+class EventPayload(TypedDict):
+    id: str
+    summary: NotRequired[str]
+    description: NotRequired[str]
+    start: _DateTimePayload
+    end: _DateTimePayload
+
+
+class _DateTimePayload(TypedDict):
+    dateTime: str
+    timeZone: str
 
 
 class Event:
-    def __init__(self, event: dict) -> None:
+    def __init__(self, event: EventPayload) -> None:
         self.name: str = event.get("summary", "No Name")
         self.desc: str = event.get("description", "No Description")
-        self.meet_links: List[str] | None = extractGoogleMeetLinks(self.desc)
-        self.start: datetime.datetime = datetime.datetime.fromisoformat(event["start"]["dateTime"])
-        self.end: datetime.datetime = datetime.datetime.fromisoformat(event["end"]["dateTime"])
+        self.meet_links: list[str] | None = extract_google_meet_links(self.desc)
+        self.start: datetime.datetime = datetime.datetime.fromisoformat(event["start"]["dateTime"]).astimezone()
+        self.end: datetime.datetime = datetime.datetime.fromisoformat(event["end"]["dateTime"]).astimezone()
         self.tz: str = event["start"]["timeZone"]
         self.id: str = event["id"]
 
-    def generateEmbed(self) -> discord.Embed:
+    @property
+    def embed(self) -> discord.Embed:
         e = discord.Embed(
-            title=self.name + " starting now!",
-            # description=self.desc,
-            color=discord.Colour.brand_green(),
+            title=f"{self.name} starting now!",
+            colour=discord.Colour.brand_green(),
         )
-        e.add_field(name="Time", inline=False, value=f"<t:{round(self.start.timestamp())}:R>")
-        e.add_field(
-            name="Meeting Link",
-            inline=False,
-            value="`No Meeting Link`" if (self.meet_links is None or len(self.meet_links) == 0) else self.meet_links[0],
-        )
+        e.add_field(name="Time", value=discord.utils.format_dt(self.start, "R"))
+        if self.meet_links:
+            e.add_field(name="Meeting Link", value=self.meet_links[0])
 
         e.set_thumbnail(
             url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
         )
         return e
 
-    def generateReminderEmbed(self) -> discord.Embed:
+    @property
+    def reminder_embed(self) -> discord.Embed:
         e = discord.Embed(
-            title=self.name + f" starts in {REMINDER_BEFORE_N_MINUTES} " + "minutes"
-            if REMINDER_BEFORE_N_MINUTES > 1
-            else "minute" + "!",
-            # description=self.desc,
+            title=f"{self.name} starts in {plural(REMINDER_BEFORE_N_MINUTES):minute}!",
             color=discord.Colour.yellow(),
         )
         e.add_field(
             name="Time",
             inline=False,
-            value=f"<t:{round((self.start - datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES)).timestamp())}:R>",
+            value=f"{discord.utils.format_dt(self.start - datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES), 'R')}",
         )
         e.add_field(
             name="Meeting Link",
@@ -72,164 +94,187 @@ class Notification:
     def __init__(
         self,
         event: Event,
-        channelId: int,
+        channel_id: int,
         time: datetime.datetime,
-        nType: str = "default",
-        calendarName: str = "unknown calendar",
+        n_type: Literal["default", "reminder", "event"] = "default",
+        calendar_name: str = "unknown calendar",
     ) -> None:
         self.event = event
-        self.channelId = channelId
+        self.channel_id = channel_id
         self.time = time
-        self.type = nType
-        self.calendarName = calendarName
+        self.type = n_type
+        self.calendar_name = calendar_name
 
-    async def send(self, bot):
-        channel = bot.get_channel(self.channelId)
+    async def send(self, bot: IITMBot):
+        channel: discord.TextChannel = bot.get_channel(self.channel_id)  # type: ignore # this is known.
         if type == "reminder":
-            e = self.event.generateReminderEmbed()
+            e = self.event.reminder_embed
         else:
-            e = self.event.generateEmbed()
+            e = self.event.embed
         await channel.send(f"<@&{LIVE_SESSION_PING_ROLE}>", embed=e)
 
 
 class CalendarOptions:
-    def __init__(self, calendar_id: str, start: datetime.datetime, calendarKey: str):
+    def __init__(self, calendar_id: str, start: datetime.datetime, calendar_key: str):
         self.calendar_id = calendar_id
         self.start = start
-        self.key = calendarKey
+        self.key = calendar_key
 
-    def getUrlForDayEvents(self) -> str:
-        url = "https://clients6.google.com/calendar/v3/calendars/" + self.calendar_id + "/events?"
-        url += "calendarId=" + self.calendar_id
-        url += "&singleEvents=true"
-        url += "&timeZone=Asia%2FKolkata"
-        url += "&maxAttendees=1"
-        url += "&maxResults=250"
-        url += "&sanitizeHtml=true"
-        url += "&timeMin=" + convertToUrlSafe(addISTtoISO(self.start.isoformat()))  # start
-        url += "&timeMax=" + convertToUrlSafe(
-            addISTtoISO((self.start + datetime.timedelta(weeks=30)).isoformat())
-        )  # end
-        url += "&key=" + self.key
+    @property
+    def url(self) -> yarl.URL:
+        url = yarl.URL("https://clients6.google.com/calendar/v3/calendars") / self.calendar_id / "events"
+        params = {
+            "calendarId": self.calendar_id,
+            "singleEvents": "true",
+            "timeZone": "Asia/Kolkata",
+            "maxAttendees": "1",
+            "maxResults": "250",
+            "sanitizeHtml": "true",
+            "timeMin": self.start.isoformat(),
+            "timeMax": (self.start + datetime.timedelta(weeks=30)).isoformat(),
+            "key": self.key,
+        }
+        url.update_query(params)
         return url
 
 
 class Calendar:
-    def __init__(self, options: CalendarOptions):
+    def __init__(self, options: CalendarOptions, session: aiohttp.ClientSession):
         self.options = options
-        self._url = options.getUrlForDayEvents()
+        self._url = options.url
+        self._session = session
 
-    def getRawEvents(self) -> list | None:
-        try:
-            rawEvents = requests.get(self._url).json()["items"]
-            return rawEvents
-        except:
-            return None
-
-    def getEvents(self) -> List[Event] | None:
-        try:
-            rawEvents = self.getRawEvents()
-            if rawEvents is None:
+    async def get_raw_events(self) -> list[EventPayload] | None:
+        async with self._session.get(self._url) as resp:
+            if resp.status != 200:
                 return None
-            events = [Event(rawEvent) for rawEvent in rawEvents]
-            return events
-        except:
-            return None
+            data = await resp.json()
+            return data.get("items", None)
+
+    def parse_events(self, evs: list[EventPayload]) -> list[Event]:
+        return [Event(ev) for ev in evs]
 
 
-# url = "https://clients6.google.com/calendar/v3/calendars/c_rviuu7v55mu79mq0im1smptg3o@group.calendar.google.com/events?"
-# url += "calendarId=c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com"
-# url += "&singleEvents=true"
-# url += "&timeZone=Asia%2FKolkata"
-# url += "&maxAttendees=1"
-# url += "&maxResults=250"
-# url += "&sanitizeHtml=true"
-# url += "&timeMin=2023-07-19T00%3A00%3A00%2B05%3A30"
-# url += "&timeMax=2023-08-31T00%3A00%3A00%2B05%3A30"
-# url += "&key=AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
+# url = 'https://clients6.google.com/calendar/v3/calendars/c_rviuu7v55mu79mq0im1smptg3o@group.calendar.google.com/events?'
+# url += 'calendarId=c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com'
+# url += '&singleEvents=true'
+# url += '&timeZone=Asia%2FKolkata'
+# url += '&maxAttendees=1'
+# url += '&maxResults=250'
+# url += '&sanitizeHtml=true'
+# url += '&timeMin=2023-07-19T00%3A00%3A00%2B05%3A30'
+# url += '&timeMax=2023-08-31T00%3A00%3A00%2B05%3A30'
+# url += '&key=AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs'
 
 
 class LivePinger(commands.Cog):
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: IITMBot) -> None:
         self.bot = bot
-        self.logger = logging.getLogger("LivePinger")
-        self.logger.info("Loading Live Session Schedule")
+        log.info("Loading Live Session Schedule")
 
         # Initialize Events
-        self._events = []
-        self._pendingNotifications = []
+        self._events: list[Event] = []
+        self._pending_notifications: list[Notification] = []
+        self._have_data = asyncio.Event()
+        # should be fine, since this is loaded in an async main.
+        self._task: asyncio.Task[None] = self.bot.loop.create_task(self.dispatch_notifications())
+        self._current_notification: Notification | None = None
+        # notification updates are racy
+        self._lock = asyncio.Lock()
 
     def cog_unload(self):
-        self.refreshSchedule.cancel()
-        self.runNotifications.cancel()
+        self._task.cancel()
+        self.refresh_schedule.cancel()
 
     @tasks.loop(hours=6)
-    async def refreshSchedule(self):
-        self.logger.info("Updating Schedule List")
+    async def refresh_schedule(self):
+        log.info("Updating Schedule List")
 
         for calendar in LIVE_SESSION_CALENDARS:
             opts = CalendarOptions(
-                calendar_id=str(calendar["id"]), start=datetime.datetime.now(), calendarKey=str(calendar["key"])
+                calendar_id=str(calendar["id"]), start=datetime.datetime.now(), calendar_key=str(calendar["key"])
             )
-            cal = Calendar(opts)
-            retrievedData = cal.getRawEvents()
-            if retrievedData is None:
-                self.logger.error("Empty Schedule List")
+            cal = Calendar(opts, session=self.bot.session)
+            retrieved_data = await cal.get_raw_events()
+            if retrieved_data is None:
+                log.error("Empty Schedule List")
                 return
-            if len(retrievedData) != 0:
-                self.logger.info("Got " + str(len(retrievedData)) + " Live Sessions")
+            if len(retrieved_data) != 0:
+                log.info("Got %s Live Sessions", len(retrieved_data))
                 self._events.clear()
-                self._events = (events := [Event(event) for event in retrievedData if isEligible(event)])
-
-                for e in events:
-                    reminder = e.start - datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES)
-                    self._pendingNotifications.append(
-                        Notification(
-                            e, int(calendar["channel"]), reminder, "reminder", calendarName=str(calendar["name"])
+                self._events = events = cal.parse_events(retrieved_data)
+                async with self._lock:
+                    for e in events:
+                        reminder = e.start - datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES)
+                        self._pending_notifications.append(
+                            Notification(
+                                e, int(calendar["channel"]), reminder, "reminder", calendar_name=str(calendar["name"])
+                            )
+                        )  # need to change channel id to be dynamic
+                        self._pending_notifications.append(
+                            Notification(e, int(calendar["channel"]), e.start, "default", str(calendar["name"]))
                         )
-                    )  # need to change channel id to be dynamic
-                    self._pendingNotifications.append(
-                        Notification(e, int(calendar["channel"]), e.start, "default", str(calendar["name"]))
-                    )
-                    # need to change channel id to be dynamic
-                self._events.sort(key=lambda e: e.start)
-                self._pendingNotifications.sort(key=lambda n: n.time)
-            self.logger.info("Updated Schedule List")
+                        # need to change channel id to be dynamic
+                    self._events.sort(key=lambda e: e.start)
+                    self._pending_notifications.sort(key=lambda n: n.time)
+            log.info("Updated Schedule List")
 
-    @tasks.loop(minutes=1)
-    async def runNotifications(self):
-        self.logger.info("Checking for notifications to send")
-        now = datetime.datetime.now() - datetime.timedelta(hours=5) - datetime.timedelta(minutes=30)
-
-        notifications_to_send = [
-            notification
-            for notification in self._pendingNotifications
-            if notification.time.strftime(DATE_FORMAT) == now.strftime(DATE_FORMAT)
-        ]
-        if not notifications_to_send:
-            self.logger.info("No notifications to send")
+    async def get_next_event(self) -> Notification | None:
+        log.info("Checking for notifications to send")
+        now = discord.utils.utcnow()
+        try:
+            notification = next(
+                notification
+                for notification in self._pending_notifications
+                if notification.time <= (now + datetime.timedelta(minutes=1))
+            )
+        except StopIteration:
             return
-        self.logger.info(f"Sending {len(notifications_to_send)} notifications")
-        new_copy = self._pendingNotifications.copy()
-        for n in notifications_to_send:
-            await n.send(self.bot)
-            new_copy.remove(n)
-        self.logger.info("Sent notifications")
-        self._pendingNotifications = new_copy
-        self.logger.info("Updated pending notifications")
+        return notification
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        self.logger.info("Loaded LivePinger")
-        self.logger.info("Starting Schedule Refresh Loop")
-        self.refreshSchedule.start()
-        self.logger.info("Starting Notifications Loop")
-        self.runNotifications.start()
+    async def wait_for_next_event(self) -> Notification:
+        notification = await self.get_next_event()
+        if notification is not None:
+            self._have_data.set()
+            return notification
+        self._have_data.clear()
+        self._current_notification = None
+        await self._have_data.wait()
+        notification = await self.get_next_event()
+        assert notification is not None
+        return notification
+
+    async def call_event(self, notification: Notification) -> None:
+        async with self._lock:
+            self._pending_notifications.remove(notification)
+        await notification.send(self.bot)
+
+    async def dispatch_notifications(self) -> None:
+        try:
+            while not self.bot.is_closed():
+                notification = self._current_notification = await self.wait_for_next_event()
+                now = discord.utils.utcnow()
+                a_minute_ago = now - datetime.timedelta(minutes=1)
+                if notification.time >= a_minute_ago:
+                    to_sleep = (notification.time - a_minute_ago).total_seconds()
+                    await asyncio.sleep(to_sleep)
+                await self.call_event(notification)
+        except asyncio.CancelledError:
+            raise
+        except (OSError, discord.ConnectionClosed):
+            self._task.cancel()
+            self._task = self.bot.loop.create_task(self.dispatch_notifications())
+
+    async def cog_load(self):
+        log.info("Loaded LivePinger")
+        log.info("Starting Schedule Refresh Loop")
+        self.refresh_schedule.start()
 
     @commands.command()
     async def test_pipeline(self, ctx):
         await ctx.reply("Scheduling notification for 1 minute from now")
-        self._pendingNotifications.append(
+        # this doesn't need a lock? i think?
+        self._pending_notifications.append(
             Notification(
                 Event(
                     {
@@ -256,67 +301,49 @@ class LivePinger(commands.Cog):
     async def coming_up(self, ctx):
         if ctx.message.author.id != 625907860861091856:
             ctx.reply("you are not allowed to use this command :(")
-        if len(self._pendingNotifications) == 0:
+        if len(self._pending_notifications) == 0:
             await ctx.reply("No upcoming notifications")
             return
 
         #  partition _pendingNotifications into 5s
-        parts = [self._pendingNotifications[i : i + 5] for i in range(0, len(self._pendingNotifications), 5)]
+        parts = [self._pending_notifications[i : i + 5] for i in range(0, len(self._pending_notifications), 5)]
         embeds = []
         for i in range(len(parts)):
             e = discord.Embed(title=f"Upcoming Notifications", color=discord.Colour.blurple())
             part = parts[i]
             for notification in part:
                 e.add_field(
-                    name=notification.event.name + " - `" + notification.calendarName + "`",
+                    name=notification.event.name + " - `" + notification.calendar_name + "`",
                     inline=False,
-                    value=f"<t:{round(notification.time.timestamp())}:R> "
-                    + ("`RMND`" if notification.type == "reminder" else "`EVNT`"),
+                    value=f'{discord.utils.format_dt(notification.time, "R")} {"`RMND`" if notification.type == "reminder" else "`EVNT`"}',
                 )
             embeds.append(e)
         await Paginator.Simple().start(ctx, embeds)
 
 
-async def setup(bot):
+async def setup(bot: IITMBot):
     await bot.add_cog(LivePinger(bot))
 
 
 # Helpers
 
 
-def isEligible(event: str):
+def is_eligible(event: str):
     return True
     if name is None or name.strip() == "":
         return False
 
     name = name.strip().lower()
-    checks = []
 
-    # check if stars with live
-    checks.append(name.startswith("live"))
+    if not name.startswith("live"):
+        return False
 
-    # Add other checks below
+    # Add other negative checks below.
 
-    # Check
-    return not False in checks
+    return True
 
 
-def extractGoogleMeetLinks(text: str):
-    if text is None or text.strip() == "":
+def extract_google_meet_links(text: str) -> list[str] | None:
+    if not text:
         return None
-
-    return re.findall(r"(https?://meet\.google\.com/[a-zA-Z0-9_-]+)", text)
-
-
-def convertToUrlSafe(url: str):
-    conversionTable = {"/": "%2F", ":": "%3A", "+": "%2B", "-": "%2D"}
-    for character, replacement in conversionTable.items():
-        url = url.replace(character, replacement)
-
-    return url
-
-
-def addISTtoISO(iso: str):
-    if not iso.endswith("+05:30"):
-        iso += "+05:30"
-    return iso
+    return MEET_LINK_REGEX.findall(text)
