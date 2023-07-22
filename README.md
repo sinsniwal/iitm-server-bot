@@ -3,7 +3,7 @@
 This project is a Server Discord bot that handles interactions, messages, reactions, and Slash commands. It is built using Python and the Discord.py library.
 
 
-## Getting Started
+## Setup for Running the Bot
 
 To use this bot, you need to do the following:
 
@@ -14,6 +14,21 @@ To use this bot, you need to do the following:
 5. Install the required Python packages by running `pip install -r requirements.txt.`
 6. Run the `main.py` file to start the bot.
 
+## Setup for Development
+1. Clone this repository to your local machine.
+2. Modify `config.py` with your settings.
+3. Add the required secrets to `.env.example`
+4. Rename `.env.example` to `.env`
+5. Install `poetry` using `pip install poetry`
+6. Install the required python packages by running `poetry install`
+7. Run the `main.py` file to start the bot.
+
+### Commonly used poetry commands
+- **Adding Dependencies**
+`poetry add <package_name>`
+- **Updating requirements files**
+`poetry export --without-hashes -o requirements.txt`
+`poetrt export --without-hashes -o dev-requirements.txt --with dev`
 
 ## Project Structure
 
