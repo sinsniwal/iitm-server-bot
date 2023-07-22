@@ -31,7 +31,8 @@ To use this bot, you need to do the following:
 - **Updating Dev Requirements File** `poetry export --without-hashes -o dev-requirements.txt --only dev`
 - **Sorting Imports** `isort .`
 - **Formatting Code** `black .`
-> Make sure to sort imports and format code before commits so workflow passes
+- **Static Type Checking** `pyright`
+> Make sure to sort imports,format code and run pyright before commits so workflow passes
 
 ## Project Structure
 
