@@ -177,13 +177,14 @@ class LivePinger(commands.Cog):
         self._pending_notifications: list[Notification] = []
         self._have_data = asyncio.Event()
         # should be fine, since this is loaded in an async main.
-        self._task: asyncio.Task[None] = self.bot.loop.create_task(self.dispatch_notifications())
+        self._task: asyncio.Task[None] | None = None
         self._current_notification: Notification | None = None
         # notification updates are racy
         self._lock = asyncio.Lock()
 
     def cog_unload(self):
-        self._task.cancel()
+        if self._task:
+            self._task.cancel()
         self.refresh_schedule.cancel()
 
     @tasks.loop(hours=6)
@@ -262,11 +263,13 @@ class LivePinger(commands.Cog):
         except asyncio.CancelledError:
             raise
         except (OSError, discord.ConnectionClosed):
-            self._task.cancel()
+            if self._task:
+                self._task.cancel()
             self._task = self.bot.loop.create_task(self.dispatch_notifications())
 
     async def cog_load(self):
         log.info("Loaded LivePinger")
+        self._task = self.bot.loop.create_task(self.dispatch_notifications())
         log.info("Starting Schedule Refresh Loop")
         self.refresh_schedule.start()
 
