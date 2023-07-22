@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-import re
 from typing import TYPE_CHECKING, Literal, TypedDict
 from urllib.parse import quote_plus
 
@@ -25,7 +24,6 @@ if TYPE_CHECKING:
 
 DATE_FORMAT = "%d-%m-%Y %H:%M"
 REMINDER_BEFORE_N_MINUTES = 5
-MEET_LINK_REGEX = re.compile(r"(https?://meet\.google\.com/[a-zA-Z0-9_-]+)")
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +34,7 @@ class EventPayload(TypedDict):
     description: NotRequired[str]
     start: _DateTimePayload
     end: _DateTimePayload
+    conferenceData: _ConferenceData
 
 
 class _DateTimePayload(TypedDict):
@@ -43,15 +42,32 @@ class _DateTimePayload(TypedDict):
     timeZone: str
 
 
+class _ConferenceData(TypedDict):
+    conferenceId: str
+    conferenceSolution: _ConferenceSolution
+
+
+class _ConferenceSolution(TypedDict):
+    key: _ConferenceSolutionKey
+
+
+class _ConferenceSolutionKey(TypedDict):
+    type: Literal["eventHangout", "eventNamedHangout", "hangoutsMeet", "addOn"]
+
+
 class Event:
     def __init__(self, event: EventPayload) -> None:
         self.name: str = event.get("summary", "No Name")
         self.desc: str = event.get("description", "No Description")
-        self.meet_links: list[str] | None = extract_google_meet_links(self.desc)
         self.start: datetime.datetime = datetime.datetime.fromisoformat(event["start"]["dateTime"]).astimezone()
         self.end: datetime.datetime = datetime.datetime.fromisoformat(event["end"]["dateTime"]).astimezone()
         self.tz: str = event["start"]["timeZone"]
         self.id: str = event["id"]
+        event_type = event["conferenceData"]["conferenceSolution"]["key"]["type"]
+        if event_type == "hangoutsMeet":
+            self.meet_link = f'https://meet.google.com/{event["conferenceData"]["conferenceId"]}'
+        else:
+            self.meet_link = None
 
     @property
     def embed(self) -> discord.Embed:
@@ -60,8 +76,8 @@ class Event:
             colour=discord.Colour.brand_green(),
         )
         e.add_field(name="Time", value=discord.utils.format_dt(self.start, "R"))
-        if self.meet_links:
-            e.add_field(name="Meeting Link", value=self.meet_links[0])
+        if self.meet_link:
+            e.add_field(name="Meeting Link", value=self.meet_link, inline=False)
 
         e.set_thumbnail(
             url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
@@ -79,12 +95,8 @@ class Event:
             inline=False,
             value=f"{discord.utils.format_dt(self.start - datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES), 'R')}",
         )
-        e.add_field(
-            name="Meeting Link",
-            inline=False,
-            value="`No Meeting Link`" if (self.meet_links is None or len(self.meet_links) == 0) else self.meet_links[0],
-        )
-
+        if self.meet_link:
+            e.add_field(name="Meeting Link", value=self.meet_link, inline=False)
         e.set_thumbnail(
             url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
         )
@@ -312,6 +324,14 @@ class LivePinger(commands.Cog):
                             "timeZone": "Asia/Kolkata",
                         },
                         "id": "test",
+                        "conferenceData": {
+                            "conferenceId": "not-a-real-meet-link",
+                            "conferenceSolution": {
+                                "key": {
+                                    "type": "hangoutsMeet",
+                                }
+                            },
+                        },
                     }
                 ),
                 ctx.channel.id,
@@ -367,9 +387,3 @@ def is_eligible(event: str):
     # Add other negative checks below.
 
     return True
-
-
-def extract_google_meet_links(text: str) -> list[str] | None:
-    if not text:
-        return None
-    return MEET_LINK_REGEX.findall(text)
