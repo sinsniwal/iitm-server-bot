@@ -18,7 +18,6 @@ python-dotenv = "^1.0.0"
 black = "^23.3.0"
 isort = "^5.12.0"
 ipython = "^8.14.0"
-pyright = "^1.1.318"
 
 [build-system]
 requires = ["poetry-core"]
