@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from logging.handlers import TimedRotatingFileHandler
 from traceback import TracebackException
 
+import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -93,9 +94,10 @@ class IITMBot(commands.AutoShardedBot):
     """
 
     user: discord.ClientUser
+    session: aiohttp.ClientSession
 
     @classmethod
-    def _use_default(cls):
+    def _use_default(cls, *, session: aiohttp.ClientSession):
         """
         Create an instance of IITMBot with base configuration
         """
@@ -111,6 +113,7 @@ class IITMBot(commands.AutoShardedBot):
             help_command=None,
             tree_cls=BotTree,
         )
+        x.session = session
         return x
 
     async def load_extensions(self):
@@ -121,10 +124,17 @@ class IITMBot(commands.AutoShardedBot):
                     await self.load_extension(f"cogs.{filename[:-3]}")
                     logger.info(f"Loaded cogs.{filename[:-3]}")
                 except Exception as e:
-                    logger.error(f"cogs.{filename[:-3]} failed to load: {e}")
+                    logger.exception(f"cogs.{filename[:-3]} failed to load: {e}", exc_info=e)
+
+    async def setup_hook(self) -> None:
+        await self.load_extensions()
 
     async def on_ready(self):
         logger.info("Logged in as")
         logger.info(f"\tUser: {self.user.name}")
         logger.info(f"\tID  : {self.user.id}")
         logger.info("------")
+
+    async def close(self) -> None:
+        await super().close()
+        await self.session.close()
