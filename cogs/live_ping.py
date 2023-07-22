@@ -134,7 +134,7 @@ class CalendarOptions:
             "timeMax": (self.start + datetime.timedelta(weeks=30)).isoformat(),
             "key": self.key,
         }
-        url.update_query(params)
+        url = url.update_query(params)
         return url
 
 
@@ -146,9 +146,11 @@ class Calendar:
 
     async def get_raw_events(self) -> list[EventPayload] | None:
         async with self._session.get(self._url) as resp:
+            log.info("%s %s: %s -> %s", resp.method, resp.url, resp.status, resp.reason)
             if resp.status != 200:
                 return None
             data = await resp.json()
+            log.info("data: %s", data)
             return data.get("items", None)
 
     def parse_events(self, evs: list[EventPayload]) -> list[Event]:
