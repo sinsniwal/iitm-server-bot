@@ -33,24 +33,28 @@ LIVE_SESSION_CALENDARS = [
         "id": "c_rviuu7v55mu79mq0im1smptg3o%40group.calendar.google.com",
         "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
         "channel": 780959983301820426 if ENVIRONMENT == "prod" else 1104485755637735458,
+        "icon": "https://i.imgur.com/vBjyKv7.png",
     },
     {
         "name": "Maths 1 - May 23",
         "id": "c_a9c3c9118e64ae5e1746d451d79ee9775cd2e7c6c9237f3c0bc8cd4504d37ded%40group.calendar.google.com",
         "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
         "channel": 780959307403100181 if ENVIRONMENT == "prod" else 1104485755637735462,
+        "icon": "https://i.imgur.com/urvAeZE.png",
     },
     {
         "name": "Stats 1 - May 23",
         "id": "c_p84m18r1paj8ccjlhdvtkj9sbk%40group.calendar.google.com",
         "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
         "channel": 780959569769660416 if ENVIRONMENT == "prod" else 1104485755637735460,
+        "icon": "https://i.imgur.com/stM1dnN.png",
     },
     {
         "name": "CT - May 23",
         "id": "c_4uohcdlrfqd010amaomm03luso%40group.calendar.google.com",
         "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs",
         "channel": 780959847234535464 if ENVIRONMENT == "prod" else 1104485755864240260,
+        "icon": "https://i.imgur.com/Ay4GImJ.png",
     },
 ]
 

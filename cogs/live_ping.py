@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
+import re
 from typing import TYPE_CHECKING, Literal, TypedDict
 from urllib.parse import quote_plus
 
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
 
 DATE_FORMAT = "%d-%m-%Y %H:%M"
 REMINDER_BEFORE_N_MINUTES = 5
+MEET_LINK_REGEX = re.compile(r"(https?://meet\.google\.com/[a-zA-Z0-9_-]+)")
 
 log = logging.getLogger(__name__)
 
@@ -63,11 +65,19 @@ class Event:
         self.end: datetime.datetime = datetime.datetime.fromisoformat(event["end"]["dateTime"]).astimezone()
         self.tz: str = event["start"]["timeZone"]
         self.id: str = event["id"]
-        event_type = event["conferenceData"]["conferenceSolution"]["key"]["type"]
-        if event_type == "hangoutsMeet":
-            self.meet_link = f'https://meet.google.com/{event["conferenceData"]["conferenceId"]}'
+        cData = event.get("conferenceData", None)
+        if not cData:
+            self.meet_link = (
+                None
+                if (meet_links := extract_google_meet_links(self.desc)) is None or len(meet_links) == 0
+                else meet_links[0]
+            )
         else:
-            self.meet_link = None
+            event_type = event["conferenceData"]["conferenceSolution"]["key"]["type"]
+            if event_type == "hangoutsMeet":
+                self.meet_link = f'https://meet.google.com/{event["conferenceData"]["conferenceId"]}'
+            else:
+                self.meet_link = None
 
     @property
     def embed(self) -> discord.Embed:
@@ -79,9 +89,9 @@ class Event:
         if self.meet_link:
             e.add_field(name="Meeting Link", value=self.meet_link, inline=False)
 
-        e.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
-        )
+        # e.set_thumbnail(
+        #     url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
+        # )
         return e
 
     @property
@@ -97,9 +107,9 @@ class Event:
         )
         if self.meet_link:
             e.add_field(name="Meeting Link", value=self.meet_link, inline=False)
-        e.set_thumbnail(
-            url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
-        )
+        # e.set_thumbnail(
+        #     url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
+        # )
         return e
 
 
@@ -111,32 +121,42 @@ class Notification:
         time: datetime.datetime,
         n_type: Literal["default", "reminder", "event"] = "default",
         calendar_name: str = "unknown calendar",
+        icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png",
     ) -> None:
         self.event = event
         self.channel_id = channel_id
         self.time = time.astimezone()
         self.type = n_type
         self.calendar_name = calendar_name
+        self.icon_url = icon_url
 
     async def send(self, bot: IITMBot):
-        channel: discord.TextChannel = bot.get_channel(self.channel_id)  # type: ignore # this is known.
-        log.info("chanenel: %s", channel)
+        # type: ignore # this is known.
+        channel: discord.TextChannel = bot.get_channel(self.channel_id)
+        log.info(f"channel: name -> {str(channel.name)}  | id -> {str(channel.id)}")
         if self.type == "reminder":
             e = self.event.reminder_embed
         else:
             e = self.event.embed
-        e.set_footer(
-            text=self.calendar_name,
-            icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png",
+        e.set_thumbnail(
+            url=self.icon_url,
         )
+        e.set_footer(text=f"🗓️ {self.calendar_name}")
         await channel.send(f"<@&{LIVE_SESSION_PING_ROLE}>", embed=e)
 
 
 class CalendarOptions:
-    def __init__(self, calendar_id: str, start: datetime.datetime, calendar_key: str):
+    def __init__(
+        self,
+        calendar_id: str,
+        start: datetime.datetime,
+        calendar_key: str,
+        icon: str = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png",
+    ):
         self.calendar_id = calendar_id
         self.start = start
         self.key = calendar_key
+        self.icon = icon
 
     @property
     def url(self) -> yarl.URL:
@@ -175,7 +195,14 @@ class Calendar:
             return data.get("items", None)
 
     def parse_events(self, evs: list[EventPayload]) -> list[Event]:
-        return [Event(ev) for ev in evs]
+        l = []
+        for ev in evs:
+            try:
+                l.append(Event(ev))
+            except Exception as e:
+                log.error("Error parsing event -> " + str(e))
+                log.error(str(ev))
+        return l
 
 
 # url = 'https://clients6.google.com/calendar/v3/calendars/c_rviuu7v55mu79mq0im1smptg3o@group.calendar.google.com/events?'
@@ -217,7 +244,10 @@ class LivePinger(commands.Cog):
         self._fetched.clear()
         for calendar in LIVE_SESSION_CALENDARS:
             opts = CalendarOptions(
-                calendar_id=str(calendar["id"]), start=datetime.datetime.now(), calendar_key=str(calendar["key"])
+                calendar_id=str(calendar["id"]),
+                start=datetime.datetime.now(),
+                calendar_key=str(calendar["key"]),
+                icon=str(calendar["icon"]),
             )
             cal = Calendar(opts, session=self.bot.session)
             retrieved_data = await cal.get_raw_events()
@@ -233,11 +263,24 @@ class LivePinger(commands.Cog):
                         reminder = e.start - datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES)
                         self._pending_notifications.append(
                             Notification(
-                                e, int(calendar["channel"]), reminder, "reminder", calendar_name=str(calendar["name"])
+                                event=e,
+                                channel_id=int(calendar["channel"]),
+                                time=reminder,
+                                n_type="reminder",
+                                calendar_name=str(calendar["name"]),
+                                icon_url=str(calendar["icon"]),
                             )
-                        )  # need to change channel id to be dynamic
+                        )
+                        # need to change channel id to be dynamic
                         self._pending_notifications.append(
-                            Notification(e, int(calendar["channel"]), e.start, "default", str(calendar["name"]))
+                            Notification(
+                                event=e,
+                                channel_id=int(calendar["channel"]),
+                                time=e.start,
+                                n_type="default",
+                                calendar_name=str(calendar["name"]),
+                                icon_url=str(calendar["icon"]),
+                            )
                         )
                         # need to change channel id to be dynamic
                     self._events.sort(key=lambda e: e.start)
@@ -304,38 +347,28 @@ class LivePinger(commands.Cog):
         self.refresh_schedule.start()
 
     @commands.command()
-    async def test_pipeline(self, ctx):
-        await ctx.reply("Scheduling notification for 1 minute from now")
+    async def test_pipeline(self, ctx, include_conference: str = "yes"):
+        if ctx.message.author.id not in [625907860861091856, 411166117084528640]:
+            await ctx.reply("you are not allowed to use this command :(")
+            return
+
+        if (include_conference := include_conference.lower().strip()) not in ["yes", "no"]:
+            await ctx.reply("Invalid argument. Please use `yes` or `no`")
+            return
+
+        await ctx.reply(
+            f"Test Notification for 1 Minute from now\n`includeConferenceDetails` -> `{include_conference.upper()}`"
+        )
         # this doesn't need a lock? i think?
         self._pending_notifications.insert(
             0,
             Notification(
-                Event(
-                    {
-                        "summary": "Test Event",
-                        "description": "Test Description. https://meet.google.com/not-a-real-meet-link. :)",
-                        "start": {
-                            # add local timezone
-                            "dateTime": (datetime.datetime.now() + datetime.timedelta(minutes=1)).isoformat(),
-                            "timeZone": "Asia/Kolkata",
-                        },
-                        "end": {
-                            "dateTime": (datetime.datetime.now() + datetime.timedelta(minutes=2)).isoformat(),
-                            "timeZone": "Asia/Kolkata",
-                        },
-                        "id": "test",
-                        "conferenceData": {
-                            "conferenceId": "not-a-real-meet-link",
-                            "conferenceSolution": {
-                                "key": {
-                                    "type": "hangoutsMeet",
-                                }
-                            },
-                        },
-                    }
-                ),
-                ctx.channel.id,
-                datetime.datetime.now() + datetime.timedelta(minutes=1),
+                event=Event(get_test_event_data(include_conference=(include_conference == "yes"))),
+                channel_id=ctx.channel.id,
+                time=datetime.datetime.now() + datetime.timedelta(minutes=1),
+                calendar_name="Pinger Test Calendar",
+                n_type="default",
+                icon_url="https://i.imgur.com/HJo8u3y.png",
             ),
         )
         # restart the task
@@ -345,8 +378,9 @@ class LivePinger(commands.Cog):
 
     @commands.command()
     async def coming_up(self, ctx):
-        if ctx.message.author.id != 625907860861091856:
-            ctx.reply("you are not allowed to use this command :(")
+        if ctx.message.author.id not in [625907860861091856, 411166117084528640]:
+            await ctx.reply("you are not allowed to use this command :(")
+            return
         if len(self._pending_notifications) == 0:
             await ctx.reply("No upcoming notifications")
             return
@@ -387,3 +421,51 @@ def is_eligible(event: str):
     # Add other negative checks below.
 
     return True
+
+
+def extract_google_meet_links(text: str) -> list[str] | None:
+    if not text:
+        return None
+    return MEET_LINK_REGEX.findall(text)
+
+
+def get_test_event_data(include_conference: bool = True) -> EventPayload:
+    if include_conference:
+        return {
+            "summary": "Test Event",
+            "description": "Test Description. https://meet.google.com/des-scrip-tion. :)",
+            "start": {
+                # add local timezone
+                "dateTime": (datetime.datetime.now() + datetime.timedelta(minutes=1)).isoformat(),
+                "timeZone": "Asia/Kolkata",
+            },
+            "end": {
+                "dateTime": (datetime.datetime.now() + datetime.timedelta(minutes=2)).isoformat(),
+                "timeZone": "Asia/Kolkata",
+            },
+            "id": "test",
+            "conferenceData": {
+                "conferenceId": "con-fer-ence",
+                "conferenceSolution": {
+                    "key": {
+                        "type": "hangoutsMeet",
+                    }
+                },
+            },
+        }
+    else:
+        # don't change this
+        return {
+            "summary": "Test Event",
+            "description": "Test Description. https://meet.google.com/des-scrip-tion. :)",
+            "start": {
+                # add local timezone
+                "dateTime": (datetime.datetime.now() + datetime.timedelta(minutes=1)).isoformat(),
+                "timeZone": "Asia/Kolkata",
+            },
+            "end": {
+                "dateTime": (datetime.datetime.now() + datetime.timedelta(minutes=2)).isoformat(),
+                "timeZone": "Asia/Kolkata",
+            },
+            "id": "test",
+        }  # type: ignore
