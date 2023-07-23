@@ -61,8 +61,10 @@ class Event:
     def __init__(self, event: EventPayload) -> None:
         self.name: str = event.get("summary", "No Name")
         self.desc: str = event.get("description", "No Description")
-        self.start: datetime.datetime = datetime.datetime.fromisoformat(event["start"]["dateTime"]).astimezone()
-        self.end: datetime.datetime = datetime.datetime.fromisoformat(event["end"]["dateTime"]).astimezone()
+        self.start: datetime.datetime = datetime.datetime.fromisoformat(
+            event["start"]["dateTime"]).astimezone()
+        self.end: datetime.datetime = datetime.datetime.fromisoformat(
+            event["end"]["dateTime"]).astimezone()
         self.tz: str = event["start"]["timeZone"]
         self.id: str = event["id"]
         cData = event.get("conferenceData", None)
@@ -87,7 +89,8 @@ class Event:
         )
         e.add_field(name="Time", value=discord.utils.format_dt(self.start, "R"))
         if self.meet_link:
-            e.add_field(name="Meeting Link", value=self.meet_link, inline=False)
+            e.add_field(name="Meeting Link",
+                        value=self.meet_link, inline=False)
 
         # e.set_thumbnail(
         #     url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
@@ -103,10 +106,11 @@ class Event:
         e.add_field(
             name="Time",
             inline=False,
-            value=f"{discord.utils.format_dt(self.start - datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES), 'R')}",
+            value=f"{discord.utils.format_dt(self.start, 'R')}",
         )
         if self.meet_link:
-            e.add_field(name="Meeting Link", value=self.meet_link, inline=False)
+            e.add_field(name="Meeting Link",
+                        value=self.meet_link, inline=False)
         # e.set_thumbnail(
         #     url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png"
         # )
@@ -131,9 +135,10 @@ class Notification:
         self.icon_url = icon_url
 
     async def send(self, bot: IITMBot):
-        # type: ignore # this is known.
-        channel: discord.TextChannel = bot.get_channel(self.channel_id)
-        log.info(f"channel: name -> {str(channel.name)}  | id -> {str(channel.id)}")
+        channel: discord.TextChannel = bot.get_channel(
+            self.channel_id)  # type: ignore
+        log.info(
+            f"channel: name -> {str(channel.name)}  | id -> {str(channel.id)}")
         if self.type == "reminder":
             e = self.event.reminder_embed
         else:
@@ -187,7 +192,8 @@ class Calendar:
 
     async def get_raw_events(self) -> list[EventPayload] | None:
         async with self._session.get(self._url) as resp:
-            log.info("%s %s: %s -> %s", resp.method, resp.url, resp.status, resp.reason)
+            log.info("%s %s: %s -> %s", resp.method,
+                     resp.url, resp.status, resp.reason)
             if resp.status != 200:
                 log.error(await resp.text())
                 return None
@@ -260,7 +266,9 @@ class LivePinger(commands.Cog):
                 self._events = events = cal.parse_events(retrieved_data)
                 async with self._lock:
                     for e in events:
-                        reminder = e.start - datetime.timedelta(minutes=REMINDER_BEFORE_N_MINUTES)
+                        reminder = e.start - \
+                            datetime.timedelta(
+                                minutes=REMINDER_BEFORE_N_MINUTES)
                         self._pending_notifications.append(
                             Notification(
                                 event=e,
@@ -338,7 +346,8 @@ class LivePinger(commands.Cog):
         except (OSError, discord.ConnectionClosed):
             if self._task:
                 self._task.cancel()
-            self._task = self.bot.loop.create_task(self.dispatch_notifications())
+            self._task = self.bot.loop.create_task(
+                self.dispatch_notifications())
 
     async def cog_load(self):
         log.info("Loaded LivePinger")
@@ -363,7 +372,8 @@ class LivePinger(commands.Cog):
         self._pending_notifications.insert(
             0,
             Notification(
-                event=Event(get_test_event_data(include_conference=(include_conference == "yes"))),
+                event=Event(get_test_event_data(
+                    include_conference=(include_conference == "yes"))),
                 channel_id=ctx.channel.id,
                 time=datetime.datetime.now() + datetime.timedelta(minutes=1),
                 calendar_name="Pinger Test Calendar",
@@ -386,10 +396,12 @@ class LivePinger(commands.Cog):
             return
 
         #  partition _pendingNotifications into 5s
-        parts = [self._pending_notifications[i : i + 5] for i in range(0, len(self._pending_notifications), 5)]
+        parts = [self._pending_notifications[i: i + 5]
+                 for i in range(0, len(self._pending_notifications), 5)]
         embeds = []
         for i in range(len(parts)):
-            e = discord.Embed(title=f"Upcoming Notifications", color=discord.Colour.blurple())
+            e = discord.Embed(title=f"Upcoming Notifications",
+                              color=discord.Colour.blurple())
             part = parts[i]
             for notification in part:
                 e.add_field(
