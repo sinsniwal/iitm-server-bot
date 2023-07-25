@@ -67,11 +67,11 @@ class Event:
         self.id: str = event["id"]
         cData = event.get("conferenceData", None)
         if not cData:
-            self.meet_link = (
-                None
-                if (meet_links := extract_google_meet_links(self.desc)) is None or len(meet_links) == 0
-                else meet_links[0]
-            )
+            match = MEET_LINK_REGEX.search(self.desc)
+            if match is not None:
+                self.meet_link = match.group()
+            else:
+                self.meet_link = None
         else:
             event_type = event["conferenceData"]["conferenceSolution"]["key"]["type"]
             if event_type == "hangoutsMeet":
