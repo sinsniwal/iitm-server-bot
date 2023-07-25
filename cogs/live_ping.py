@@ -422,10 +422,6 @@ def is_eligible(event: str):
     return True
 
 
-def extract_google_meet_links(text: str) -> list[str] | None:
-    if not text:
-        return None
-    return MEET_LINK_REGEX.findall(text)
 
 
 def get_test_event_data(include_conference: bool = True) -> EventPayload:
