@@ -6,7 +6,7 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar
 
 import discord
 from discord.ext import commands
@@ -56,10 +56,10 @@ class PageSource(Generic[T]):
     def get_max_pages(self) -> Optional[int]:
         return None
 
-    async def get_page(self, page_number: int) -> T:
+    async def get_page(self, page_number: int) -> T | list[T]:
         raise NotImplementedError
 
-    async def format_page(self, menu: BotPages, page: T) -> str | discord.Embed | dict[str, Any]:
+    async def format_page(self, menu: BotPages, page: T | list[T]) -> str | discord.Embed | dict[str, Any]:
         raise NotImplementedError
 
 
@@ -94,7 +94,7 @@ class BotPages(discord.ui.View, Generic[T]):
                 self.add_item(self.numbered_page)
             self.add_item(self.stop_pages)
 
-    async def _get_kwargs_from_page(self, page: T) -> dict[str, Any]:
+    async def _get_kwargs_from_page(self, page: T | list[T]) -> dict[str, Any]:
         value = await discord.utils.maybe_coroutine(self.source.format_page, self, page)
         if isinstance(value, dict):
             return value
@@ -248,14 +248,6 @@ class ListPageSource(PageSource[T]):
 
     def get_max_pages(self) -> int:
         return self._max_pages
-
-    @overload
-    async def get_page(self, page_number: Literal[1]) -> T:
-        ...
-
-    @overload
-    async def get_page(self, page_number: int) -> list[T]:
-        ...
 
     async def get_page(self, page_number: int) -> T | list[T]:
         if self.per_page == 1:
