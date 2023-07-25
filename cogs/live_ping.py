@@ -9,12 +9,12 @@ from urllib.parse import quote_plus
 
 import aiohttp
 import discord
-import Paginator
 import yarl
 from discord.ext import commands, tasks
 
 from config import LIVE_SESSION_CALENDARS, LIVE_SESSION_PING_ROLE
 from utils.formats import plural
+from utils.paginator import BotPages, ListPageSource
 
 
 if TYPE_CHECKING:
@@ -384,20 +384,21 @@ class LivePinger(commands.Cog):
             await ctx.reply("No upcoming notifications")
             return
 
-        #  partition _pendingNotifications into 5s
-        parts = [self._pending_notifications[i : i + 5] for i in range(0, len(self._pending_notifications), 5)]
-        embeds = []
-        for i in range(len(parts)):
-            e = discord.Embed(title=f"Upcoming Notifications", color=discord.Colour.blurple())
-            part = parts[i]
-            for notification in part:
-                e.add_field(
-                    name=notification.event.name + " - `" + notification.calendar_name + "`",
-                    inline=False,
-                    value=f'{discord.utils.format_dt(notification.time, "R")} {"`RMND`" if notification.type == "reminder" else "`EVNT`"}',
-                )
-            embeds.append(e)
-        await Paginator.Simple().start(ctx, embeds)
+        source = NotificationPageSource(self._pending_notifications, per_page=5)
+        pages = BotPages(source, ctx=ctx)
+        await pages.start()
+
+
+class NotificationPageSource(ListPageSource[Notification]):
+    async def format_page(self, menu: BotPages, entries: list[Notification]) -> discord.Embed:
+        e = discord.Embed(colour=discord.Colour.blurple())
+        for notification in entries:
+            e.add_field(
+                name=f"{notification.event.name} - `{notification.calendar_name}`",
+                value=f'{discord.utils.format_dt(notification.time, "R")} {"`RMND`" if notification.type == "reminder" else "`EVNT`"}',
+                inline=False,
+            )
+        return e
 
 
 async def setup(bot: IITMBot):
