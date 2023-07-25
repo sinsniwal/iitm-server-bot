@@ -121,7 +121,7 @@ class Notification:
         time: datetime.datetime,
         n_type: Literal["default", "reminder", "event"] = "default",
         calendar_name: str = "unknown calendar",
-        icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png",
+        icon_url: str = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png",
     ) -> None:
         self.event = event
         self.channel_id = channel_id
