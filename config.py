@@ -6,7 +6,7 @@ ENVIRONMENT = "dev"  # "dev" or "prod"
 ####################################
 ## BOT CONFIGURATION VARIABLES ##
 ####################################
-BOT_PREFIX = "?"
+BOT_PREFIX = "!"
 DEFAULT_ACTIVITY_TEXT = "Datascience tutorials"
 OWNER_ID = 730762300503490650
 PRIMARY_GUILD_ID = 762774569827565569
