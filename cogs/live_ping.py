@@ -346,11 +346,8 @@ class LivePinger(commands.Cog):
         self.refresh_schedule.start()
 
     @commands.command()
-    async def test_pipeline(self, ctx, include_conference: str = "yes"):
-        if ctx.message.author.id not in [625907860861091856, 411166117084528640]:
-            await ctx.reply("you are not allowed to use this command :(")
-            return
-
+    @admin_only()
+    async def test_live_session(self, ctx, include_conference: str = "yes"):
         if (include_conference := include_conference.lower().strip()) not in ["yes", "no"]:
             await ctx.reply("Invalid argument. Please use `yes` or `no`")
             return
@@ -376,10 +373,8 @@ class LivePinger(commands.Cog):
         self._task = self.bot.loop.create_task(self.dispatch_notifications())
 
     @commands.command()
+    @admin_only()
     async def coming_up(self, ctx):
-        if ctx.message.author.id not in [625907860861091856, 411166117084528640]:
-            await ctx.reply("you are not allowed to use this command :(")
-            return
         if len(self._pending_notifications) == 0:
             await ctx.reply("No upcoming notifications")
             return
@@ -420,8 +415,6 @@ def is_eligible(event: str):
     # Add other negative checks below.
 
     return True
-
-
 
 
 def get_test_event_data(include_conference: bool = True) -> EventPayload:
