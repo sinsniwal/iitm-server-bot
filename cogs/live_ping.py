@@ -10,10 +10,11 @@ from urllib.parse import quote_plus
 import aiohttp
 import discord
 import yarl
-from discord.ext import commands, tasks, menus
+from discord.ext import commands, menus, tasks
 
 from config import LIVE_SESSION_CALENDARS, LIVE_SESSION_PING_ROLE
 from utils.formats import plural
+from utils.helper import admin_only
 
 
 if TYPE_CHECKING:
@@ -55,6 +56,7 @@ class _ConferenceSolution(TypedDict):
 class _ConferenceSolutionKey(TypedDict):
     type: Literal["eventHangout", "eventNamedHangout", "hangoutsMeet", "addOn"]
 
+
 class _EventSource(menus.ListPageSource):
     def __init__(self, data):
         super().__init__(data, per_page=5)
@@ -62,13 +64,14 @@ class _EventSource(menus.ListPageSource):
     def format_page(self, menu, entries):
         offset = menu.current_page * self.per_page
         embed = discord.Embed(title=f"Upcoming Notifications", color=discord.Colour.blurple())
-        for _,notification in enumerate(entries,start=offset):
+        for _, notification in enumerate(entries, start=offset):
             embed.add_field(
-                        name=notification.event.name + " - `" + notification.calendar_name + "`",
-                        inline=False,
-                        value=f'{discord.utils.format_dt(notification.time, "R")} {"`RMND`" if notification.type == "reminder" else "`EVNT`"}',
-                )
+                name=notification.event.name + " - `" + notification.calendar_name + "`",
+                inline=False,
+                value=f'{discord.utils.format_dt(notification.time, "R")} {"`RMND`" if notification.type == "reminder" else "`EVNT`"}',
+            )
         return embed
+
 
 class Event:
     def __init__(self, event: EventPayload) -> None:
@@ -392,7 +395,7 @@ class LivePinger(commands.Cog):
             await ctx.reply("No upcoming notifications")
             return
 
-        pages = menus.MenuPages(source=_EventSource(self._pending_notifications),clear_after_reactions=True)
+        pages = menus.MenuPages(source=_EventSource(self._pending_notifications), clear_after_reactions=True)
         await pages.start(ctx)
 
 
