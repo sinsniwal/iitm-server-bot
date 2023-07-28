@@ -10,11 +10,12 @@ from urllib.parse import quote_plus
 import aiohttp
 import discord
 import yarl
-from discord.ext import commands, tasks
+from discord.ext import commands, menus, tasks
 
 from config import LIVE_SESSION_CALENDARS, LIVE_SESSION_PING_ROLE
 from utils.formats import plural
 from utils.paginator import BotPages, ListPageSource
+from utils.helper import admin_only
 
 
 if TYPE_CHECKING:
@@ -57,6 +58,22 @@ class _ConferenceSolutionKey(TypedDict):
     type: Literal["eventHangout", "eventNamedHangout", "hangoutsMeet", "addOn"]
 
 
+class _EventSource(menus.ListPageSource):
+    def __init__(self, data):
+        super().__init__(data, per_page=5)
+
+    def format_page(self, menu, entries):
+        offset = menu.current_page * self.per_page
+        embed = discord.Embed(title=f"Upcoming Notifications", color=discord.Colour.blurple())
+        for _, notification in enumerate(entries, start=offset):
+            embed.add_field(
+                name=notification.event.name + " - `" + notification.calendar_name + "`",
+                inline=False,
+                value=f'{discord.utils.format_dt(notification.time, "R")} {"`RMND`" if notification.type == "reminder" else "`EVNT`"}',
+            )
+        return embed
+
+
 class Event:
     def __init__(self, event: EventPayload) -> None:
         self.name: str = event.get("summary", "No Name")
@@ -67,11 +84,11 @@ class Event:
         self.id: str = event["id"]
         cData = event.get("conferenceData", None)
         if not cData:
-            self.meet_link = (
-                None
-                if (meet_links := extract_google_meet_links(self.desc)) is None or len(meet_links) == 0
-                else meet_links[0]
-            )
+            match = MEET_LINK_REGEX.search(self.desc)
+            if match is not None:
+                self.meet_link = match.group()
+            else:
+                self.meet_link = None
         else:
             event_type = event["conferenceData"]["conferenceSolution"]["key"]["type"]
             if event_type == "hangoutsMeet":
@@ -121,7 +138,7 @@ class Notification:
         time: datetime.datetime,
         n_type: Literal["default", "reminder", "event"] = "default",
         calendar_name: str = "unknown calendar",
-        icon_url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png",
+        icon_url: str = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Google_Meet_icon_%282020%29.svg/2491px-Google_Meet_icon_%282020%29.svg.png",
     ) -> None:
         self.event = event
         self.channel_id = channel_id
@@ -346,11 +363,8 @@ class LivePinger(commands.Cog):
         self.refresh_schedule.start()
 
     @commands.command()
-    async def test_pipeline(self, ctx, include_conference: str = "yes"):
-        if ctx.message.author.id not in [625907860861091856, 411166117084528640]:
-            await ctx.reply("you are not allowed to use this command :(")
-            return
-
+    @admin_only()
+    async def test_live_session(self, ctx, include_conference: str = "yes"):
         if (include_conference := include_conference.lower().strip()) not in ["yes", "no"]:
             await ctx.reply("Invalid argument. Please use `yes` or `no`")
             return
@@ -376,13 +390,12 @@ class LivePinger(commands.Cog):
         self._task = self.bot.loop.create_task(self.dispatch_notifications())
 
     @commands.command()
+    @admin_only()
     async def coming_up(self, ctx):
-        if ctx.message.author.id not in [625907860861091856, 411166117084528640]:
-            await ctx.reply("you are not allowed to use this command :(")
-            return
         if len(self._pending_notifications) == 0:
             await ctx.reply("No upcoming notifications")
             return
+
 
         source = NotificationPageSource(self._pending_notifications, per_page=5)
         pages = BotPages(source, ctx=ctx)
@@ -399,6 +412,7 @@ class NotificationPageSource(ListPageSource[Notification]):
                 inline=False,
             )
         return e
+
 
 
 async def setup(bot: IITMBot):
@@ -421,12 +435,6 @@ def is_eligible(event: str):
     # Add other negative checks below.
 
     return True
-
-
-def extract_google_meet_links(text: str) -> list[str] | None:
-    if not text:
-        return None
-    return MEET_LINK_REGEX.findall(text)
 
 
 def get_test_event_data(include_conference: bool = True) -> EventPayload:

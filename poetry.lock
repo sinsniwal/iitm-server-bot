@@ -593,6 +593,24 @@ files = [
 ]
 
 [[package]]
+name = "discord-ext-menus"
+version = "1.0.0a32+g8686b5d"
+description = "An extension module to make reaction based menus with discord.py"
+optional = false
+python-versions = ">=3.5.3"
+files = []
+develop = false
+
+[package.dependencies]
+"discord.py" = ">=1.2.5"
+
+[package.source]
+type = "git"
+url = "https://github.com/Rapptz/discord-ext-menus"
+reference = "HEAD"
+resolved_reference = "8686b5d1bbc1d3c862292eb436ab630d6e9c9b53"
+
+[[package]]
 name = "discord-py"
 version = "2.3.1"
 description = "A Python wrapper for the Discord API"
@@ -1374,3 +1392,4 @@ multidict = ">=4.0"
 lock-version = "2.0"
 python-versions = "^3.10"
 content-hash = "485dda7fb8a5331942d47daf0c9204ebd63117066bed12e9e4bf98d0799a64e8"
+
