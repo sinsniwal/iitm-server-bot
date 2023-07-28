@@ -14,6 +14,7 @@ from discord.ext import commands, menus, tasks
 
 from config import LIVE_SESSION_CALENDARS, LIVE_SESSION_PING_ROLE
 from utils.formats import plural
+from utils.paginator import BotPages, ListPageSource
 from utils.helper import admin_only
 
 
@@ -395,8 +396,23 @@ class LivePinger(commands.Cog):
             await ctx.reply("No upcoming notifications")
             return
 
-        pages = menus.MenuPages(source=_EventSource(self._pending_notifications), clear_after_reactions=True)
-        await pages.start(ctx)
+
+        source = NotificationPageSource(self._pending_notifications, per_page=5)
+        pages = BotPages(source, ctx=ctx)
+        await pages.start()
+
+
+class NotificationPageSource(ListPageSource[Notification]):
+    async def format_page(self, menu: BotPages, entries: list[Notification]) -> discord.Embed:
+        e = discord.Embed(colour=discord.Colour.blurple())
+        for notification in entries:
+            e.add_field(
+                name=f"{notification.event.name} - `{notification.calendar_name}`",
+                value=f'{discord.utils.format_dt(notification.time, "R")} {"`RMND`" if notification.type == "reminder" else "`EVNT`"}',
+                inline=False,
+            )
+        return e
+
 
 
 async def setup(bot: IITMBot):
