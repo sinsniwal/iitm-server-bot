@@ -14,8 +14,8 @@ from discord.ext import commands, menus, tasks
 
 from config import LIVE_SESSION_CALENDARS, LIVE_SESSION_PING_ROLE
 from utils.formats import plural
-from utils.paginator import BotPages, ListPageSource
 from utils.helper import admin_only
+from utils.paginator import BotPages, ListPageSource
 
 
 if TYPE_CHECKING:
@@ -396,7 +396,6 @@ class LivePinger(commands.Cog):
             await ctx.reply("No upcoming notifications")
             return
 
-
         source = NotificationPageSource(self._pending_notifications, per_page=5)
         pages = BotPages(source, ctx=ctx)
         await pages.start()
@@ -412,7 +411,6 @@ class NotificationPageSource(ListPageSource[Notification]):
                 inline=False,
             )
         return e
-
 
 
 async def setup(bot: IITMBot):
