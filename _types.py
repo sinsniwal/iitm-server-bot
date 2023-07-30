@@ -3,6 +3,9 @@
 # And specialize some generic types provided by discord.py
 
 
+from typing import Union
+
+import discord
 from discord.ext import commands
 
 from bot import IITMBot
@@ -14,3 +17,14 @@ class Context(commands.Context[IITMBot]):
     """
 
     ...
+
+
+class GuildContext(Context):
+    """
+    Context when invoked in a guild.
+    """
+
+    me: discord.Member
+    guild: discord.Guild
+    author: discord.Member
+    channel: Union[discord.TextChannel, discord.VoiceChannel, discord.Thread]
