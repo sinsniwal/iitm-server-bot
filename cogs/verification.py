@@ -69,13 +69,13 @@ class Verification(commands.Cog):
         }
         self.add_roles = {
             "ds": [
-                self.roles["ds"]["Students"],
+                self.roles["ds"]["Student"],
                 self.roles["ds"]["Foundational"],
                 self.roles["common"]["Foundational"],
                 self.roles["common"]["Verified"],
             ],  # DS, ds foundational, common foundational, common verified
             "es": [
-                self.roles["es"]["Students"],
+                self.roles["es"]["Student"],
                 self.roles["es"]["Foundational"],
                 self.roles["common"]["Foundational"],
                 self.roles["common"]["Verified"],
@@ -117,8 +117,10 @@ class Verification(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        print(message.content)
         if message.channel.id != config.AUTOMATE_CHANNEL:
             return
+
         # Compare with ID of Webhook used by Webapp to send the msg
         if message.author.id == config.AUTOMATE_WEBHOOK_ID:
             data = message.content
