@@ -1,0 +1,8 @@
+*
+!cogs/*.py
+!utils/*.py
+!utils/email_template.txt
+!bot.py
+!main.py
+!config.py
+!requirements.txt
