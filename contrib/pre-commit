@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -ex
+
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
+# change this to however you wish to activate your venv
+# shellcheck source=/dev/null  # hush.
+[ -z "$VIRTUAL_ENV" ] && . "$PROJECT_ROOT/.venv/bin/activate"
+
+black .
+isort .
+pyright
