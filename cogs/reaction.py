@@ -593,7 +593,7 @@ class Reaction(commands.Cog):
                 if added.id == self.roles["ds"]["Enthusiast"]:
                     await after.add_roles(discord.Object(id=self.roles["ds"]["Qualifier"]))
                 elif added.id == self.roles["es"]["Enthusiast"]:
-                    await after.remove_roles(discord.Object(id=self.roles["es"]["Qualifier"]))
+                    await after.add_roles(discord.Object(id=self.roles["es"]["Qualifier"]))
                 else:
                     pass
             except:
@@ -612,6 +612,7 @@ class Reaction(commands.Cog):
             except:
                 pass
 
+    @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         """
         When a member joins, send them a message with the rules and give them the role "Verified".
